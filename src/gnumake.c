@@ -1,6 +1,6 @@
 #include "stubs.h"
 #include "utils.h"
-
+#include <assert.h>
 #include <Python.h>
 
 /** @brief Dictionary of callback functions
@@ -59,6 +59,7 @@ static char* dispatch_callback(const char* name,
     {
         goto done;
     }
+    Py_INCREF(callback);
 
     args = PyTuple_New(argc);
     if (!args)
@@ -142,8 +143,7 @@ static PyObject* pygnumake_eval(PyObject* self,
         return NULL;
     }
 
-    if ((floc.lineno == -1 && floc.filenm) || 
-            (floc.lineno != -1 && !floc.filenm))
+    if (!((floc.lineno == (unsigned long)-1) ^ (floc.filenm != NULL)))
     {
         PyErr_SetString(PyExc_TypeError, 
                 "filename and lineno must be specified together");
@@ -357,6 +357,8 @@ static struct PyModuleDef pygnumake_module = {
 PyMODINIT_FUNC
 PyInit__gnumake(void)
 {
+    PyObject* mod = NULL;
+
     if (!gmk_api_loaded())
     {
         // Don't expose anything: this is just for __file__ attribute
@@ -371,7 +373,28 @@ PyInit__gnumake(void)
         }
     }
 
-    return PyModule_Create(&pygnumake_module);
+    mod = PyModule_Create(&pygnumake_module);
+
+    if (mod && gmk_api_loaded())
+    {
+        if (!python_globals)
+        {
+            PyErr_SetString(PyExc_SystemError, 
+                            "_gnumake not set up correctly");
+            goto fail;
+        }
+
+        if (PyObject_SetAttrString(mod, "global_state", python_globals) < 0)
+        {
+            goto fail;
+        }
+    }
+
+    return mod;
+
+fail:
+    Py_XDECREF(mod);
+    return NULL;
 }
 
 /** Required by GNU make */
@@ -463,6 +486,7 @@ int _gnumake_gmk_setup(void)
         }
     }
 
+    Py_SetProgramName(PYTHON_NAME);
     Py_Initialize();
     PySys_SetArgv(argc, argv);
 

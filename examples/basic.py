@@ -2,5 +2,5 @@ import gnumake
 
 import os
 
-export(os.path.isfile)
-export(os.path.isdir)
+gnumake.export(os.path.isfile)
+gnumake.export(os.path.isdir)

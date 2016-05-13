@@ -25,6 +25,9 @@ _gnumake = Extension('gnumake._gnumake',
                          '-Wall', 
                          '-Werror' 
                      ],
+                     define_macros = [
+                         ('PYTHON_NAME', 'L"{}"'.format(python_library)),
+                     ],
                 )
 
 setup(
