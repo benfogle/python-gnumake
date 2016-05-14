@@ -51,7 +51,7 @@ $(python-gnumake-objs): CFLAGS += -fPIC
 $(python-gnumake-objs): CPPFLAGS += -DPYTHON_NAME=L\"$(shell which $(PYTHON))\"
 $(python-gnumake-objs): CPPFLAGS += -I$(PYTHON_INCLUDE) 
 
-python-gnumake-lib := gnumake/_gnumake.so
+python-gnumake-lib := $(THIS_PATH)/gnumake/_gnumake.so
 $(python-gnumake-lib) : LDFLAGS += -L$(PYTHON_LIBDIR)
 $(python-gnumake-lib) : LDFLAGS += -Wl,-rpath=$(PYTHON_LIBDIR)
 $(python-gnumake-lib) : LDLIBS += $(PYTHON_LDLIBRARY)
