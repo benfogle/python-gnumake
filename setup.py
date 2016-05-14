@@ -1,12 +1,21 @@
 from setuptools import setup, find_packages, Extension
 from distutils.sysconfig import get_python_inc
+import sysconfig
 import os
 
 # We dynamically link against Python so that when we are loaded from make
 # we can host an interpreter ourselves. When we are loaded from Python,
 # this will be benign.
-# Not sure if there's a better way to get the library name.
-python_library = os.path.basename(get_python_inc())
+
+python_libdir = sysconfig.get_config_var('LIBDIR')
+multiarchsubdir = sysconfig.get_config_var('multiarchsubdir') # may be empty
+python_libdir = os.path.join(python_libdir, multiarchsubdir)
+python_library = sysconfig.get_config_var("LDLIBRARY")
+python_library = os.path.join(python_libdir, python_library)
+
+# Guess binary name from include dir
+# Is there an official way to do this?
+python_name = os.path.basename(sysconfig.get_path('include'))
 
 _gnumake = Extension('gnumake._gnumake',
                      sources = [
@@ -25,8 +34,11 @@ _gnumake = Extension('gnumake._gnumake',
                          '-Wall', 
                          '-Werror' 
                      ],
+                     extra_link_args = [
+                         '-Wl,-rpath={}'.format(python_libdir),
+                     ],
                      define_macros = [
-                         ('PYTHON_NAME', 'L"{}"'.format(python_library)),
+                         ('PYTHON_NAME', 'L"{}"'.format(python_name)),
                      ],
                 )
 

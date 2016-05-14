@@ -50,10 +50,12 @@ python-gnumake-objs := $(python-gnumake-sources:.c=.o)
 $(python-gnumake-objs): CFLAGS += -fPIC
 $(python-gnumake-objs): CPPFLAGS += -DPYTHON_NAME=L\"$(shell which $(PYTHON))\"
 $(python-gnumake-objs): CPPFLAGS += -I$(PYTHON_INCLUDE) 
+$(python-gnumake-objs): CPPFLAGS += -pthread -O2 -DNDEBUG
 
 python-gnumake-lib := $(THIS_PATH)/gnumake/_gnumake.so
 $(python-gnumake-lib) : LDFLAGS += -L$(PYTHON_LIBDIR)
 $(python-gnumake-lib) : LDFLAGS += -Wl,-rpath=$(PYTHON_LIBDIR)
+$(python-gnumake-lib) : LDFLAGS += -pthread
 $(python-gnumake-lib) : LDLIBS += $(PYTHON_LDLIBRARY)
 
 $(python-gnumake-lib): $(python-gnumake-objs)
