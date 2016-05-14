@@ -70,6 +70,7 @@ python-gnumake-deps := $(SOURCES:.c=.d)
 
 clean:
 	rm -f $(python-gnumake-objs) $(python-gnumake-deps) $(python-gnumake-lib)
+	rm -rf $(THIS_PATH)/gnumake/__pycache__
 
 .PHONY: clean
 
