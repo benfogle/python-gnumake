@@ -6,3 +6,5 @@ __pycache__
 *.o
 *.so
 .sw*
+*.d
+*.d.tmp
