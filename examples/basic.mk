@@ -19,7 +19,6 @@ import random
 # Function to return a random integer
 @gnumake.export(min_args=1, max_args=1)
 def gen_random(n):
-	import random
 	n = int(n)
 	return random.randint(1,n)
 

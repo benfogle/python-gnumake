@@ -3,3 +3,6 @@ build
 *.egg-info
 dist
 __pycache__
+*.o
+*.so
+.sw*

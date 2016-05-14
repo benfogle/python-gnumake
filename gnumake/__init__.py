@@ -89,7 +89,7 @@ try:
 
                 with open(script) as fp:
                     code = compile(fp.read(), script, 'exec')
-                    exec(code, gmk.global_state, {})
+                    exec(code, gmk.global_state, gmk.global_state)
 
                 capture.seek(0)
                 return capture.read().rstrip(b'\n')
@@ -104,7 +104,7 @@ try:
         """Run inline Python code"""
         try:
             code = compile(arg, '<python>', 'exec')
-            exec(code, gmk.global_state, {})
+            exec(code, gmk.global_state, gmk.global_state)
         except Exception as e:
             traceback.print_exc()
         
