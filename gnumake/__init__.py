@@ -9,6 +9,7 @@ import traceback
 
 import gnumake._gnumake as gmk
 import gnumake
+import gnumake.utils
 
 try:
     add_function = gmk.add_function
@@ -66,10 +67,7 @@ try:
     @export(name='python-eval', min_args=1, max_args=1)
     def python_eval(arg):
         """Evaluate a Python expression and return the result"""
-        try:
-            return eval(arg)
-        except Exception as e:
-            traceback.print_exc()
+        return eval(arg)
 
     @export(name='python-file', min_args=1)
     def python_file(*args):
@@ -93,8 +91,6 @@ try:
 
                 capture.seek(0)
                 return capture.read().rstrip(b'\n')
-        except Exception as e:
-            traceback.print_exc()
         finally:
             os.dup2(stdout_original, 1)
             sys.argv = argv_original
@@ -102,12 +98,31 @@ try:
     @export(name="python-exec", min_args=1, max_args=1)
     def python_exec(arg):
         """Run inline Python code"""
+        stdout_original = os.dup(1)
         try:
-            code = compile(arg, '<python>', 'exec')
-            exec(code, gmk.global_state, gmk.global_state)
-        except Exception as e:
-            traceback.print_exc()
-        
+            with tempfile.TemporaryFile() as capture:
+                os.dup2(capture.fileno(), 1)
+
+                code = compile(arg, '<python>', 'exec')
+                exec(code, gmk.global_state, gmk.global_state)
+
+                capture.seek(0)
+                return capture.read().rstrip(b'\n')
+        finally:
+            os.dup2(stdout_original, 1)
+ 
+    @export(name="import-pyutils")
+    def import_pyutils(args):
+        for arg in args:
+            if not arg.isidentifier():
+                evaluate('$(error Cannot import Python utility {})'.format(repr(arg)))
+                return # won't actually get here
+
+            try:
+                importlib.import_module(arg, gnumake.utils)
+            except ImportError:
+                evaluate('$(error Cannot import Python utility {})'.format(arg))
+
 except AttributeError:
     pass
 

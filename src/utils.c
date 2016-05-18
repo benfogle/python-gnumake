@@ -110,3 +110,108 @@ char* convert_to_chars(PyObject* obj)
     return chars_from_other(obj);
 }
 
+
+char* escape_string(const char* unescaped)
+{
+    // Things we need to escape:
+    //      Backslash-newline pair --> backslash + $() + newline
+    //      endef --> $() + endef
+    //      $ --> $$
+
+    char* escaped = NULL;
+    size_t n, m;
+    size_t total;
+   
+    if (!unescaped)
+    {
+        return NULL;
+    }
+
+    // Pass 1 -- how many more bytes do we need?
+    for (n = total = 0; unescaped[n]; n++, total++)
+    {
+        switch (unescaped[n])
+        {
+        case '\\':
+            if (unescaped[n+1] == '\n')
+            {
+                total += 3;
+            }
+            break;
+        case 'e':
+            if (strncmp(unescaped + n, "endef", 5) == 0)
+            {
+                total += 3;
+            }
+            break;
+        case '$':
+            total++;
+            break;
+        default:
+            break;
+        }
+    }
+    
+    if (n == 0)
+    {
+        return NULL;
+    }
+
+    escaped = gmk_api.alloc(total + 1);
+    if (!escaped)
+    {
+        gmk_api.eval("$(error Out of memory)", NULL); // won't return
+        return NULL;
+    }
+
+    // Pass two: Fill out the escaped string.
+    n = 0;
+    m = 0;
+    while (n < total)
+    {
+        switch (unescaped[n])
+        {
+        case '\\':
+            if (unescaped[n+1] == '\n')
+            {
+                strcpy(escaped + m, "$()");
+                m += 3;
+            }
+            break;
+        case 'e':
+            if (strncmp(unescaped + n, "endef", 5) == 0)
+            {
+                strcpy(escaped + m, "$()");
+                m += 3;
+            }
+            break;
+        case '$':
+            escaped[m++] = '$';
+            break;
+        default:
+            break;
+        }
+
+        escaped[m++] = unescaped[n++];
+    }
+
+    escaped[m] = '\0';
+    return escaped;
+}
+
+
+char* convert_to_chars_escaped(PyObject* obj)
+{
+    char* unescaped;
+    char* escaped;
+
+    unescaped = convert_to_chars(obj);
+    if (!unescaped)
+    {
+        return NULL;
+    }
+
+    escaped = escape_string(unescaped);
+    gmk_api.free(unescaped);
+    return escaped;
+}

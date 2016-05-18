@@ -1,5 +1,6 @@
 #include "stubs.h"
 #include "utils.h"
+#include "error.h"
 #include <assert.h>
 #include <Python.h>
 
@@ -64,7 +65,6 @@ static char* dispatch_callback(const char* name,
     args = PyTuple_New(argc);
     if (!args)
     {
-        PyErr_Print();
         goto done;
     }
 
@@ -73,7 +73,6 @@ static char* dispatch_callback(const char* name,
         PyObject* a = PyUnicode_FromString(argv[i]);
         if (!a)
         {
-            PyErr_Print();
             goto done;
         }
 
@@ -89,12 +88,7 @@ static char* dispatch_callback(const char* name,
     ret = convert_to_chars(py_result);
 
 done:
-    // Can't do much with an error, so we'll swallow it...
-    if (PyErr_Occurred())
-    {
-        PyErr_Print(); // TODO: Put this in a make variable somewhere
-    }
-
+    set_error_from_exception();
     Py_XDECREF(py_result);
     Py_XDECREF(args);
     Py_XDECREF(callback);
@@ -519,14 +513,9 @@ int _gnumake_gmk_setup(void)
     PyDict_SetItemString(python_globals, "gnumake", gnumake);
 
 done:
+    set_error_from_exception();
     Py_XDECREF(gnumake);
     Py_XDECREF(locals);
-
-    if (PyErr_Occurred())
-    {
-        PyErr_Print();
-        return 0;
-    }
 
     return 1;
 }
