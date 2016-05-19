@@ -65,6 +65,14 @@ def gmk_char_to_string(s):
 
 
 def value_to_gmk_char(obj):
+    """
+    Convert a Python object to a string suitable for passing to gnumake
+    The string will be allocated with gmk_alloc, as required.
+
+    obj: The python object to convert
+    returns: A c_void_p that can be returned to gnumake
+    """
+
     if obj is True:
         val = b'1'
     elif obj is False or obj is None:
@@ -95,13 +103,24 @@ def escape_string(s):
     Escape a string such that it can appear in a define directive.
     We need to escape 'endef', backslash-newline, and $.
     """
-
     s = s.replace('endef', '$()endef')
     s = s.replace('\\\n', '\\$()\n')
     s = s.replace('$', '$$')
     return s
 
 def _real_callback(name, argc, argv):
+    """
+    This is the real code that interfaces between gnumake and Python.
+    It converts the arguments from ctypes into a more Pythonic format, and
+    it converts the return value into a string usable by gnumake.
+
+    name:   Bytes/c_char_p name of the function being called
+    argc:   The number of arguments in argv
+    argv:   The arguments as an array of c_char_p.
+
+    returns: A string allocated by gmk_alloc
+    """
+
     ret = None
 
     try:
@@ -125,8 +144,26 @@ def _real_callback(name, argc, argv):
 _real_callback = _gmk_func_ptr(_real_callback)
 
 
-def export(func=None, *, name=None, expand=True, min_args=0,
-                                                 max_args=0):
+def guess_function_parameters(func):
+    """Guess function parameters. We only count positional arguments"""
+    min_args = 0
+    max_args = 0
+
+    sig = inspect.signature(func)
+    for param in sig.parameters.values():
+        if param.kind in (param.POSITIONAL_ONLY, param.POSITIONAL_OR_KEYWORD):
+            if max_args != -1:
+                max_args += 1
+            if param.default is param.empty:
+                min_args += 1
+        elif param.kind == param.VAR_POSITIONAL:
+            max_args = -1
+
+    return min_args, max_args
+
+
+def export(func=None, *, name=None, expand=True, min_args=-1,
+                                                 max_args=-1):
     """
     Decorator to expose a function to Python. Calls add_function on the
     given function.
@@ -142,6 +179,19 @@ def export(func=None, *, name=None, expand=True, min_args=0,
 
     May also be used as a function:
     >>> export(os.path.isfile)
+
+
+    func:   The function to expose to GNU make
+    name:   The GNU make name of the function. If omitted, defaults to the
+            unqualified function name
+    expand: If True (default) arguments to the function are expanded by make
+            before the function is called. Otherwise the function receives
+            the arguments verbatim, $(variables) and all.
+    min_args:   The minimum number of arguments to the function. 
+                If -1, (default) then the number of arguments will be guessed.
+    max_args:   If > 0, the maximum number of arguments to the function. A
+                value of 0 means any number of arguments. A value of -1
+                (default) means that the number of parameters will be guessed.
     """
     if func is None:
         # Decorator with arguments
@@ -167,6 +217,20 @@ def export(func=None, *, name=None, expand=True, min_args=0,
         else:
             expand = GMK_FUNC_NOEXPAND
 
+        guessed_min, guessed_max = guess_function_parameters(func)
+        if max_args == -1:
+            if guessed_max == 0:
+                raise ValueError("Function must take at least one parameter")
+            elif guessed_max == -1:
+                max_args = 0
+            else:
+                max_args = guessed_max
+
+        if min_args == -1:
+            min_args = guessed_min
+
+
+
         # Error check here because GNU make will just exit on error.
         if max_args != 0 and max_args < min_args:
             raise ValueError("max_args < min_args")
@@ -176,6 +240,9 @@ def export(func=None, *, name=None, expand=True, min_args=0,
             raise ValueError("negative args")
 
         name = name.encode()
+        if len(name) > 255:
+            raise ValueError("name too long")
+
         _callback_registry[name] = func
         _gmk_add_function(name, _real_callback, min_args, max_args, expand)
 
@@ -195,13 +262,13 @@ def expand(s):
     ret = _gmk_expand(s.encode())
     return gmk_char_to_string(ret)
 
-@export(name='python-eval', min_args=1, max_args=1)
+@export(name='python-eval')
 def python_eval(arg):
     """Evaluate a Python expression and return the result"""
     return eval(arg)
 
-@export(name='python-file', min_args=1)
-def python_file(*args):
+@export(name='python-file')
+def python_file(script, *args):
     """
     Run a Python script, optionally passing arguments to it. Any output
     (stdout only) of the script will be the return value.
@@ -213,8 +280,7 @@ def python_file(*args):
     argv_original = sys.argv
     stdout_original = os.dup(1)
     try:
-        script = args[0]
-        sys.argv = args
+        sys.argv = [script] + list(args)
         with tempfile.TemporaryFile() as capture:
             os.dup2(capture.fileno(), 1)
 
@@ -228,7 +294,7 @@ def python_file(*args):
         os.dup2(stdout_original, 1)
         sys.argv = argv_original
 
-@export(name="python-exec", min_args=1, max_args=1)
+@export(name="python-exec")
 def python_exec(arg):
     """Run inline Python code"""
     stdout_original = os.dup(1)
