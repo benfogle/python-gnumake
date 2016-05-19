@@ -45,7 +45,7 @@ python-gnumake-sources := $(wildcard $(py-this-path)/src/*.c)
 
 python-cppflags := -DPYTHON_NAME=L\"$(shell which $(PYTHON))\" \
 				   -I$(PYTHON_INCLUDE)  \
-				   -pthread -g -Og #-O2 -DNDEBUG
+				   -pthread -g -O0 #-O2 -DNDEBUG
 python-cflags := -fPIC
 
 python-ldflags := -L$(PYTHON_LIBDIR) \
@@ -93,6 +93,7 @@ $(PYTHON_CLEAN):
 define is-file
 $(shell [ -f "$(1)" ] && echo "$(1)")
 endef
+
 
 ifeq ($(filter $(PYTHON_CLEAN),$(MAKECMDGOALS)),)
 # Don't load at all on clean

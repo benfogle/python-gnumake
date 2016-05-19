@@ -1,5 +1,5 @@
-#ifndef PY_GNUMAKE_STUBS_H
-#define PY_GNUMAKE_STUBS_H
+#ifndef PY_GNUMAKE_API_H
+#define PY_GNUMAKE_API_H
 
 #include <gnumake.h>
 

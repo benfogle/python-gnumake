@@ -1,4 +1,4 @@
-#include "stubs.h"
+#include "gmk_api.h"
 #include <dlfcn.h>
 #include <stdlib.h>
 #include <string.h>
