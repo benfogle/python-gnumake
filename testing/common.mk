@@ -84,6 +84,34 @@ define assert-empty
 $(eval $(call assert-empty-ev,$(1)))
 endef
 
+define assert-defined-ev
+ifndef $$(1)
+$$(info -------------------------------------------------------------------)
+$$(info - $$(strip Test $$(TEST_NAME) FAILED))
+$$(info -     Value of $$(1) was undefined
+$$(info -------------------------------------------------------------------)
+$$(error $$(strip Test $$(TEST_NAME) FAILED))
+endif
+endef
+
+define assert-defined
+$(eval $(call assert-defined-ev,$(1)))
+endef
+
+define assert-undefined-ev
+ifdef $$(1)
+$$(info -------------------------------------------------------------------)
+$$(info - $$(strip Test $$(TEST_NAME) FAILED))
+$$(info -     Value of $$(1) should be undefined, was '$$($$(1))')
+$$(info -------------------------------------------------------------------)
+$$(error $$(strip Test $$(TEST_NAME) FAILED))
+endif
+endef
+
+define assert-undefined
+$(eval $(call assert-undefined-ev,$(1)))
+endef
+
 
 define fail-test-ev
 $$(info -------------------------------------------------------------------)

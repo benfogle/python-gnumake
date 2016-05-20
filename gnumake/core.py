@@ -11,10 +11,17 @@ import os
 import inspect
 import traceback
 import ctypes
+import string
+
 import gnumake
 
 GMK_FUNC_DEFAULT  = 0x00
 GMK_FUNC_NOEXPAND = 0x01
+
+# Make info pages say that () are actually legal, but we won't allow them
+# because in practice the parsing is too problematic. It also says that $
+# is legal, but that clearly doesn't work.
+ILLEGAL_VAR_CHARS = frozenset(string.whitespace + ':#=$()')
 
 # Python code in a Makefile shares globals, but it shouldn't share _my_
 # globals.
@@ -50,7 +57,7 @@ _gmk_expand.restype = ctypes.c_void_p # Need to manually convert to str
 _gmk_expand.argtypes = [ ctypes.c_char_p ]
 
 
-def gmk_char_to_string(s):
+def _gmk_char_to_string(s):
     """
     Convert a c_void_p to a Python string.
     This frees s!
@@ -64,7 +71,7 @@ def gmk_char_to_string(s):
     return ret
 
 
-def value_to_gmk_char(obj):
+def _value_to_gmk_char(obj):
     """
     Convert a Python object to a string suitable for passing to gnumake
     The string will be allocated with gmk_alloc, as required.
@@ -95,18 +102,56 @@ def value_to_gmk_char(obj):
     ctypes.memset(ret + len(val), 0, 1)
     return ret
 
-_callback_registry = {}
+def object_to_string(obj):
+    """
+    Convert a Python object to a string that will make some sense to make.
+    """
 
+    if obj is True:
+        return '1'
+    elif obj is False or obj is None:
+        return ''
+    elif isinstance(obj, str):
+        return obj
+    elif isinstance(obj, bytes):
+        return obj.decode()
+    elif isinstance(obj, bytearray):
+        return bytes(obj).decode()
+    else:
+        try:
+            return bytes(memoryview(obj)).encode()
+        except TypeError:
+            try:
+                return str(obj)
+            except:
+                return ''
+
+def is_legal_name(name):
+    """Check that a name is a legal makefile variable name"""
+    return not frozenset(name).intersection(ILLEGAL_VAR_CHARS)
 
 def escape_string(s):
     """
     Escape a string such that it can appear in a define directive.
+    We need to escape 'endef' and backslash-newline.
+    """
+    s = s.replace('endef', '$()endef')
+    s = s.replace('\\\n', '\\$()\n')
+    return s
+
+def fully_escape_string(s):
+    """
+    Escape a string such that it can appear verbatim in a define directive.
     We need to escape 'endef', backslash-newline, and $.
     """
     s = s.replace('endef', '$()endef')
     s = s.replace('\\\n', '\\$()\n')
     s = s.replace('$', '$$')
     return s
+
+
+# Holds all of the function implementations
+_callback_registry = {}
 
 def _real_callback(name, argc, argv):
     """
@@ -129,12 +174,12 @@ def _real_callback(name, argc, argv):
             s = _callback_registry[name](*args)
 
         # Don't return, or we never get to the 'else'
-        ret = value_to_gmk_char(s)
+        ret = _value_to_gmk_char(s)
     except Exception as e:
         if expand('$(PYTHON_PRINT_TRACEBACK)'):
             traceback.print_exc()
 
-        err = escape_string("{}: {}".format(type(e).__name__, e))
+        err = fully_escape_string("{}: {}".format(type(e).__name__, e))
         evaluate('define PYTHON_LAST_ERROR\n{}\nendef'.format(err))
     else:
         evaluate('undefine PYTHON_LAST_ERROR')
@@ -145,7 +190,11 @@ _real_callback = _gmk_func_ptr(_real_callback)
 
 
 def guess_function_parameters(func):
-    """Guess function parameters. We only count positional arguments"""
+    """Guess function parameters. We only count positional arguments.
+    
+    returns min_args, max_args. max_args may be -1 to indicate variable
+    arguments.
+    """
     min_args = 0
     max_args = 0
 
@@ -260,7 +309,7 @@ def expand(s):
     Expand a string according to Makefile rules
     """
     ret = _gmk_expand(s.encode())
-    return gmk_char_to_string(ret)
+    return _gmk_char_to_string(ret)
 
 @export(name='python-eval')
 def python_eval(arg):
@@ -310,3 +359,119 @@ def python_exec(arg):
     finally:
         os.dup2(stdout_original, 1)
 
+class Variables:
+    """
+    Convenience class for manipulating variables in a more Pythonic manner
+    """
+
+    def get(self, name, default = '', expand_value=True):
+        """
+        Get a variable name
+
+        name:       The name of the variable. This should not contain a $(...),
+                    and computed names are not allowed.
+
+        default:    Value to return if the result is undefined. Defaults to an
+                    empty string. This value will be returned only if the
+                    variable is undefined, not if it has been defined to an
+                    empty string.
+
+        expand:     If true (default), the value will be expanded according
+                    to the flavor of the variable. This is usually what you
+                    want. Note that this makes no difference for simply
+                    expanded variables, which are fully expanded on assignment.
+        
+        returns:    The value of the variable
+        """
+
+        if not is_legal_name(name):
+            raise ValueError("Illegal name")
+
+        if not expand_value:
+            expand_func = 'value '
+        else:
+            expand_func = ''
+
+        ret = expand('$({}{})'.format(expand_func, name))
+
+        if not ret and default:
+            if not self.defined(name):
+                ret = default
+        return ret
+
+    def set(self, name, value, flavor='recursive'):
+        """
+        Set a variable
+
+        name:   The variable name
+        value:  The variable value. This string will be escaped to preserve
+                newlines, etc. Dollar signs ($) are _not_ escaped.
+        flavor: May be 'recursive' or 'simple'. Specifying 'recursive' is
+                equivalent to name=value, while 'simple' is equivalent to
+                name:=value. Default is recursive.
+        """
+
+        if not is_legal_name(name):
+            raise ValueError("Illegal name")
+
+        if flavor == 'recursive':
+            equals = '='
+        elif flavor == 'simple':
+            equals = ':='
+        else:
+            raise ValueError("Valid flavors are 'recursive' and 'simple'")
+
+        value = escape_string(object_to_string(value))
+
+        evaluate('define {} {}\n{}\nendef'.format(name, equals, value))
+
+    def undefine(self, name):
+        """Undefine a variable"""
+        if not is_legal_name(name):
+            raise ValueError("Illegal name")
+        evaluate('undefine {}'.format(name))
+
+    def origin(self, name):
+        """
+        Return the origin of a variable. See make documentation for possible
+        values and their meanings.
+        """
+        if not is_legal_name(name):
+            raise ValueError("Illegal name")
+        return expand('$(origin {})'.format(name))
+
+    def flavor(self, name):
+        """
+        Returns the flavor of a variable. May return 'simple', 'recursive'
+        or 'undefined'
+        """
+        if not is_legal_name(name):
+            raise ValueError("Illegal name")
+        return expand('$(flavor {})'.format(name))
+
+    def defined(self, name):
+        """Returns True if a variable has been defined, or False otherwise"""
+        return self.origin(name) != 'undefined'
+
+    def __getitem__(self, name):
+        """Synonym for get(name)"""
+        return self.get(name)
+
+    def __setitem__(self, name, value):
+        """Synonym for set(name, value)"""
+        self.set(name, value)
+
+    def __delitem__(self, name):
+        """Synonym for undefine(name)"""
+        self.undefine(name)
+
+    def __contains__(self, name):
+        """Synonym for defined(name)"""
+        return self.defined(name)
+
+# Object to use to access variables in a Pythonic manner
+variables = Variables()
+
+# Synonym for variables object. This is for Python code inlined in a makefile,
+# where terse one-liners may be desirable
+var = variables 
