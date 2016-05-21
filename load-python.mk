@@ -1,6 +1,8 @@
 py-this-makefile := $(abspath $(lastword $(MAKEFILE_LIST)))
 py-this-path := $(dir $(py-this-makefile))
 
+PYTHONPATH += $(py-this-path)
+
 # Save this so we can restore it
 last-default := $(.DEFAULT_GOAL)
 
@@ -46,7 +48,7 @@ python-gnumake-sources := $(wildcard $(py-this-path)/src/*.c)
 python-cppflags := -DPYTHON_NAME=L\"$(shell which $(PYTHON))\" \
 				   -I$(PYTHON_INCLUDE)  \
 				   -pthread -g -O0 #-O2 -DNDEBUG
-python-cflags := -fPIC
+python-cflags := -fPIC -Wall -Werror
 
 python-ldflags := -L$(PYTHON_LIBDIR) \
 				  -Wl,-rpath=$(PYTHON_LIBDIR) \
