@@ -12,6 +12,7 @@ import inspect
 import traceback
 import ctypes
 import string
+import importlib
 
 import gnumake
 
@@ -266,7 +267,9 @@ def export(func=None, *, name=None, expand=True, min_args=-1,
         else:
             expand = GMK_FUNC_NOEXPAND
 
-        guessed_min, guessed_max = guess_function_parameters(func)
+        if max_args == -1 or min_args == -1:
+            guessed_min, guessed_max = guess_function_parameters(func)
+
         if max_args == -1:
             if guessed_max == 0:
                 raise ValueError("Function must take at least one parameter")
@@ -359,6 +362,29 @@ def python_exec(arg):
     finally:
         os.dup2(stdout_original, 1)
 
+@export(name='python-library')
+def python_library(libs):
+    """
+    A convenience function for essentially the same thing as:
+    $(python-exec import gnumake.library.<foo>)
+
+    This function appends successful imports to PYTHON_LIBRARIES, and will
+    not set the error variable if a module fails to import.
+    """
+    libs = libs.split()
+    for mod in libs:
+        if mod.isidentifier():
+            try:
+                importlib.import_module("gnumake.library." + mod)
+            except ImportError as e:
+                pass
+            else:
+                evaluate("PYTHON_LIBRARIES += {}".format(mod))
+
+
+
+
+
 class Variables:
     """
     Convenience class for manipulating variables in a more Pythonic manner
@@ -431,6 +457,19 @@ class Variables:
             raise ValueError("Illegal name")
         evaluate('undefine {}'.format(name))
 
+    def append(self, name, value):
+        """
+        Append a value to a possibly existing variable. Values will
+        be appended with a single space between the old value and the new
+        one. The flavor of the variable will remain unchanged.
+        """
+        if not is_legal_name(name):
+            raise ValueError("Illegal name")
+
+        value = escape_string(object_to_string(value))
+        evaluate('define {} +=\n{}\nendef'.format(name, value))
+
+
     def origin(self, name):
         """
         Return the origin of a variable. See make documentation for possible
@@ -475,3 +514,5 @@ variables = Variables()
 # Synonym for variables object. This is for Python code inlined in a makefile,
 # where terse one-liners may be desirable
 var = variables 
+
+

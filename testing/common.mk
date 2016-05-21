@@ -3,6 +3,7 @@ include $(THIS_PATH)/../load-python.mk
 comma=,
 empty=
 space=$(empty) $(empty)
+tab=$(empty)	$(empty)
 
 # If we define these as is, then on a clean build, before our python module
 # has been built, the assertions will fail. This will cause the makefile to
@@ -36,6 +37,22 @@ endef
 define assert-not-equal
 $(eval $(call assert-not-equal-ev,$(1),$(2)))
 endef
+
+
+define assert-contains-ev
+ifeq ($$(filter $$(1),$$(2)),)
+$$(info -------------------------------------------------------------------)
+$$(info - $$(strip Test $$(TEST_NAME) FAILED))
+$$(info -     Value '$$(1)' not in '$$(2)')
+$$(info -------------------------------------------------------------------)
+$$(error $$(strip Test $$(TEST_NAME) FAILED))
+endif
+endef
+
+define assert-contains
+$(eval $(call assert-contains-ev,$(1),$(2)))
+endef
+
 
 define assert-match-ev
 _pattern := $$(subst \,\\,$$(2))

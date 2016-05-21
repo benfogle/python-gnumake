@@ -121,3 +121,15 @@ RESULT := $(python-eval gnumake.var.flavor('FOO'))
 $(call assert-empty,PYTHON_LAST_ERROR)
 $(call assert-equal,undefined,$(RESULT))
 
+FOO = bar
+$(python-exec gnumake.var.append('FOO', 'baz'))
+$(call assert-empty,PYTHON_LAST_ERROR)
+$(call assert-equal,bar baz,$(FOO))
+$(call assert-equal,recursive,$(flavor FOO))
+
+FOO := bar
+$(python-exec gnumake.var.append('FOO', 'baz'))
+$(call assert-empty,PYTHON_LAST_ERROR)
+$(call assert-equal,bar baz,$(FOO))
+$(call assert-equal,simple,$(flavor FOO))
+
