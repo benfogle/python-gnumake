@@ -84,7 +84,7 @@ python-gnumake-deps := $(python-gnumake-sources:.c=.d)
 endif # clean
 
 $(PYTHON_CLEAN):
-	rm -f $(python-gnumake-objs) $(python-gnumake-deps) 
+	rm -f src/*.o src/*.d
 	rm -rf $(py-this-path)/gnumake/__pycache__ $(py-this-path)/gnumake/*.so
 
 .PHONY: $(PYTHON_CLEAN)
