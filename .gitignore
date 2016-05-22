@@ -8,3 +8,4 @@ __pycache__
 .sw*
 *.d
 *.d.tmp
+local_install

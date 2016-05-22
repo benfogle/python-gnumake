@@ -166,8 +166,6 @@ int _gnumake_gmk_setup(void)
 {
 	int ret = 0;
     PyObject* gnumake = NULL;
-    PyObject* locals = NULL;
-    PyObject* globals = NULL;
 	const char* location;
 	wchar_t* argv[1] = { NULL };
 
@@ -200,19 +198,7 @@ int _gnumake_gmk_setup(void)
 		}
 	}
 
-    globals = PyDict_New();
-    if (!globals)
-    {
-        goto done;
-    }
-
-    locals = PyDict_New();
-    if (!locals)
-    {
-        goto done;
-    }
-
-    gnumake = PyImport_ImportModuleEx("gnumake", globals, locals, NULL);
+    gnumake = PyImport_ImportModule("gnumake");
     if (!gnumake)
     {
         goto done;
@@ -228,8 +214,6 @@ done:
 	}
 
     Py_XDECREF(gnumake);
-    Py_XDECREF(locals);
-    Py_XDECREF(globals);
 
 	// Release the GIL
 	PyEval_SaveThread();
