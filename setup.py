@@ -11,7 +11,7 @@ import sysconfig
 #
 # Setuptools is still used for the install version because we can more easily
 # work with PyPi, etc.
-if os.getenv('CALLED_FROM_LOAD_PYTHON_MK'):
+if os.getenv('DISTUTILS_ONLY'):
     from distutils.core import setup, Extension
 else:
     try:
@@ -26,7 +26,9 @@ else:
 
 python_libdir = sysconfig.get_config_var('LIBDIR')
 python_libdir += sysconfig.get_config_var('multiarchsubdir') or ''
-#python_library = sysconfig.get_config_var("LDLIBRARY")
+python_library = sysconfig.get_config_var("LDLIBRARY")
+
+python_library = os.path.join(python_libdir, python_library)
 
 # Guess binary name from include dir -- we need this in case the user has
 # multiple versions installed, such as python3.5m vs python3.5dm
@@ -38,13 +40,6 @@ _gnumake = Extension('gnumake._gnumake',
                          'src/gnumake.c',
                          'src/gmk_api.c',
                      ],
-                     library_dirs = [
-                         python_libdir,
-                     ],
-                     libraries = [
-                         #python_library,
-                         python_name
-                     ],
                      runtime_library_dirs = [
                          python_libdir,
                      ],
@@ -55,6 +50,9 @@ _gnumake = Extension('gnumake._gnumake',
                      extra_compile_args = [
                          '-Wall', 
                          '-Werror' 
+                     ],
+                     extra_objects = [
+                         python_library,
                      ],
                      define_macros = [
                          ('PYTHON_NAME', 'L"{}"'.format(python_name)),

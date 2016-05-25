@@ -1,12 +1,6 @@
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE 1
-#endif
-
 #include "gmk_api.h"
 #include <assert.h>
-#include <libgen.h>
 #include <Python.h>
-#include <dlfcn.h>
 #include <limits.h>
 
 int _gnumake_gmk_setup(void);
@@ -81,7 +75,7 @@ static void export_var(const char* name)
 	{
 		if (value[0])
 		{
-			setenv("name", value, 1);
+			setenv(name, value, 1);
 		}
 		gmk_api.free(value);
 	}
@@ -109,50 +103,6 @@ static void set_python_env(void)
 	export_var("PYTHONHASHSEED");
 }
 
-/** @brief Figure out where gnumake actually lives.
- *
- * If py-gnumake lives in a source directory rather than being installed,
- * we likely need to alter the path to ensure that we can import it.
- *
- * @return The path containing the gnumake module. Add this to sys.path.
- */
-static const char* get_package_location(void)
-{
-	Dl_info info;
-	static char result[PATH_MAX];
-	const char* curr;
-	ssize_t len;
-
-	if (dladdr(_gnumake_gmk_setup, &info) == 0)
-	{
-		return NULL;
-	}
-
-	if (!info.dli_fname)
-	{
-		return NULL;
-	}
-
-	// Go back two directories. If we find ourselves in
-	// foo/bar/gnumake/_gnumake.so, we should return foo/bar
-	len = strlen(info.dli_fname);
-	if (len >= sizeof(result))
-	{
-		return NULL;
-	}
-
-	strcpy(result, info.dli_fname);
-
-	curr = dirname(dirname(result));
-	if (!curr)
-	{
-		return NULL;
-	}
-
-	strcpy(result, curr); // probably a no-op
-	return result;
-}
-
 
 /** @brief Initialize Python for GNU make
  *
@@ -166,7 +116,6 @@ int _gnumake_gmk_setup(void)
 {
 	int ret = 0;
     PyObject* gnumake = NULL;
-	const char* location;
 	wchar_t* argv[1] = { NULL };
 
     if (load_gmk_api() < 0)
@@ -184,19 +133,6 @@ int _gnumake_gmk_setup(void)
         PyErr_SetFromErrno(PyExc_OSError);
         goto done;
     }
-
-	// Add myself to the path so we can always load gnumake.
-	location = get_package_location();
-	if (location)
-	{
-		PyObject* sys_path = PySys_GetObject("path");
-		if (sys_path)
-		{
-			PyObject* location_path = PyUnicode_FromString(location); 
-			PyList_Append(sys_path, location_path);
-			Py_DECREF(location_path);
-		}
-	}
 
     gnumake = PyImport_ImportModule("gnumake");
     if (!gnumake)
