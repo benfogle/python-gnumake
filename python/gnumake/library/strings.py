@@ -1,6 +1,6 @@
 # String utility functions
 
-from gnumake.core import export
+from gnumake import export
 import string
 
 
