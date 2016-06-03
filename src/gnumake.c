@@ -58,13 +58,13 @@ static void pygnumake_gmk_cleanup(void)
  *
  *  @param name		The name to export.
  */
-static void export_var(const char* name)
+static void export_var(const char* name, char join)
 {
 	char* value;
 	char buffer[256];
 	int ret;
 
-	ret = snprintf(buffer, sizeof(buffer), "$(%s)", name);
+	ret = snprintf(buffer, sizeof(buffer), "$(strip $(%s))", name);
 	if (ret < 0 || (size_t)ret >= sizeof(buffer))
 	{
 		return;
@@ -75,6 +75,18 @@ static void export_var(const char* name)
 	{
 		if (value[0])
 		{
+            if (join)
+            {
+                char* c;
+                for (c = value; *c; c++)
+                {
+                    if (*c == ' ')
+                    {
+                        *c = join;
+                    }
+                }
+            }
+
 			setenv(name, value, 1);
 		}
 		gmk_api.free(value);
@@ -89,18 +101,18 @@ static void export_var(const char* name)
  */
 static void set_python_env(void)
 {
-	export_var("PYTHONHOME");
-	export_var("PYTHONPATH");
-	export_var("PYTHONOPTIMIZE");
-	export_var("PYTHONDEBUG");
-	export_var("PYTHONDONTWRITEBYTECODE");
-	export_var("PYTHONINSPECT"); // does this work?
-	export_var("PYTHONIOENCODING");
-	export_var("PYTHONUSERSITE");
-	export_var("PYTHONUNBUFFERED");
-	export_var("PYTHONVERBOSE");
-	export_var("PYTHONWARNINGS");
-	export_var("PYTHONHASHSEED");
+	export_var("PYTHONHOME", 0);
+	export_var("PYTHONPATH", ':');
+	export_var("PYTHONOPTIMIZE", 0);
+	export_var("PYTHONDEBUG", 0);
+	export_var("PYTHONDONTWRITEBYTECODE", 0);
+	export_var("PYTHONINSPECT", 0); // does this work?
+	export_var("PYTHONIOENCODING", 0);
+	export_var("PYTHONUSERSITE", 0);
+	export_var("PYTHONUNBUFFERED", 0);
+	export_var("PYTHONVERBOSE", 0);
+	export_var("PYTHONWARNINGS", ',');
+	export_var("PYTHONHASHSEED", 0);
 }
 
 
