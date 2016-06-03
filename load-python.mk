@@ -39,8 +39,8 @@ endef
 ##############################################################################
 # Variables that control how the plugin builds/loads
 
-PYTHON_CLEAN ?= clean
-PYTHON ?= python3
+.PYTHON_CLEAN ?= clean
+.PYTHON ?= python3
 
 # Save this so we can restore it -- we don't want to add default rules
 last-default := $(.DEFAULT_GOAL)
@@ -57,12 +57,12 @@ py-gnumake-plugin := $(wildcard $(py-install-dir)/gnumake/_gnumake*.so)
 ifneq ($(words $(py-gnumake-plugin)),1)
 # We need to guess the module name because either 1) it doesn't exist, or
 # 2) there are multiple Python versions sharing that directory.
-ifndef PYTHON_EXT_SUFFIX
-PYTHON_EXT_SUFFIX := $(shell $(PYTHON) -c \
+ifndef .PYTHON_EXT_SUFFIX
+.PYTHON_EXT_SUFFIX := $(shell $(.PYTHON) -c \
 	'import sysconfig as s; print(s.get_config_var("EXT_SUFFIX") or \
 								  s.get_config_var("SO"))')
 endif
-py-gnumake-plugin := $(py-install-dir)/gnumake/_gnumake$(PYTHON_EXT_SUFFIX)
+py-gnumake-plugin := $(py-install-dir)/gnumake/_gnumake$(.PYTHON_EXT_SUFFIX)
 endif
 
 # We can't just make this a phony target or the makefiles won't restart
@@ -76,14 +76,14 @@ py-gnumake-sources := $(call find-python-sources,$(py-src-paths))
 $(py-gnumake-plugin): export DISTUTILS_ONLY := 1
 $(py-gnumake-plugin): $(py-gnumake-sources) $(py-this-path)/setup.py
 	cd $(py-this-path) ;\
-	$(PYTHON) $(py-setup) build $(PYTHON_BUILD_FLAGS) \
+	$(.PYTHON) $(py-setup) build $(.PYTHON_BUILD_FLAGS) \
 						--build-base $(py-build-base) \
-						  install $(PYTHON_INSTALL_FLAGS) \
+						  install $(.PYTHON_INSTALL_FLAGS) \
 				  		--install-lib $(py-install-dir)
 	touch $(py-gnumake-plugin)
 
 # setup.py's clean gets this wrong: --build-base doesn't seem to work right.
-$(PYTHON_CLEAN): py-clean-plugin
+$(.PYTHON_CLEAN): py-clean-plugin
 
 py-clean-plugin:
 	rm -rf $(py-install-dir)
@@ -96,10 +96,10 @@ py-clean-plugin:
 # Actually load the library
 
 
-PYTHONPATH += $(py-install-dir)
+.PYTHONPATH += $(py-install-dir)
 
 # Don't load at all on clean -- it might be broken
-ifeq ($(filter $(PYTHON_CLEAN),$(MAKECMDGOALS)),)
+ifeq ($(filter $(.PYTHON_CLEAN),$(MAKECMDGOALS)),)
 ifeq ($(call is-file,$(py-gnumake-plugin)),)
 # Hasn't been built yet. Load optionally so that we can actually build it.
 -load $(py-gnumake-plugin)
@@ -109,9 +109,9 @@ endif # is-file
 endif # clean
 
 ifneq ($(filter $(py-gnumake-plugin),$(.LOADED)),)
-PYTHON_LOADED := 1
+.PYTHON_LOADED := 1
 else
-undefine PYTHON_LOADED
+undefine .PYTHON_LOADED
 endif
 
 

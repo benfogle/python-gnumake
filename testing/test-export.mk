@@ -21,23 +21,23 @@ def product_square(*args):
 endef
 
 $(python-exec $(python_code))
-$(call assert-empty,PYTHON_LAST_ERROR)
+$(call assert-empty,.PYTHON_LAST_ERROR)
 
 RESULT := $(product 1,2,3,4,5)
 $(call assert-equal,120,$(RESULT))
-$(call assert-empty,PYTHON_LAST_ERROR)
+$(call assert-empty,.PYTHON_LAST_ERROR)
 
 RESULT := $(product 1,2,3,4,5,cow)
 $(call assert-empty,RESULT)
-$(call assert-match,^ValueError: invalid literal for int,$(PYTHON_LAST_ERROR))
+$(call assert-match,^ValueError: invalid literal for int,$(.PYTHON_LAST_ERROR))
 
 RESULT := $(product_two 1,2,3,4,5)
 $(call assert-equal,120,$(RESULT))
-$(call assert-empty,PYTHON_LAST_ERROR)
+$(call assert-empty,.PYTHON_LAST_ERROR)
 
 RESULT := $(product-sqr 1,2,3,4,5)
 $(call assert-equal,14400,$(RESULT))
-$(call assert-empty,PYTHON_LAST_ERROR)
+$(call assert-empty,.PYTHON_LAST_ERROR)
 
 RESULT := $(product-square 1,2,3,4,5)
 $(call assert-empty,RESULT)

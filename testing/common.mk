@@ -8,7 +8,7 @@ tab=$(empty)	$(empty)
 # If we define these as is, then on a clean build, before our python module
 # has been built, the assertions will fail. This will cause the makefile to
 # exit before we have a chance to build and reload.
-ifdef PYTHON_LOADED
+ifdef .PYTHON_LOADED
 
 define assert-equal-ev
 ifneq ($$(1),$$(2))
@@ -155,4 +155,4 @@ run_tests:
 
 
 
-endif	# PYTHON_LOADED
+endif	# .PYTHON_LOADED

@@ -56,15 +56,16 @@ static void pygnumake_gmk_cleanup(void)
  *  Needed because even if you mark a variable as exported, it doesn't make it
  *  into the environment until recipes are executed.
  *
- *  @param name		The name to export.
+ *  @param env_name Name of destination environment variable
+ *  @param make_name Name of the source make variable
  */
-static void export_var(const char* name, char join)
+static void export_var(const char* env_name, const char* make_name)
 {
 	char* value;
 	char buffer[256];
 	int ret;
 
-	ret = snprintf(buffer, sizeof(buffer), "$(strip $(%s))", name);
+	ret = snprintf(buffer, sizeof(buffer), "$(strip $(%s))", make_name);
 	if (ret < 0 || (size_t)ret >= sizeof(buffer))
 	{
 		return;
@@ -75,19 +76,72 @@ static void export_var(const char* name, char join)
 	{
 		if (value[0])
 		{
-            if (join)
+			setenv(env_name, value, 1);
+		}
+		gmk_api.free(value);
+	}
+}
+
+/** @brief Helper function to set an environment variable from a GNU make
+ *  variable.
+ *
+ *  As export_var, but appends to an existing variable and joins using a
+ *  given separator.
+ *
+ *  @param env_name Name of destination environment variable
+ *  @param make_name Name of the source make variable
+ *  @param join     The char to use to join list elements.
+ */
+static void append_var_list(const char* env_name, 
+                            const char* make_name,
+                            char join)
+{
+	char* value;
+    char* existing;
+	char buffer[256];
+	int ret;
+    char* c;
+
+	ret = snprintf(buffer, sizeof(buffer), "$(strip $(%s))", make_name);
+	if (ret < 0 || (size_t)ret >= sizeof(buffer))
+	{
+		return;
+	}
+
+	value = gmk_api.expand(buffer);
+	if (value)
+	{
+		if (value[0])
+		{
+            for (c = value; *c; c++)
             {
-                char* c;
-                for (c = value; *c; c++)
+                if (*c == ' ')
                 {
-                    if (*c == ' ')
-                    {
-                        *c = join;
-                    }
+                    *c = join;
                 }
             }
 
-			setenv(name, value, 1);
+            existing = getenv(env_name);
+            if (existing && existing[0])
+            {
+                size_t existing_len = strlen(existing);
+                size_t value_len = strlen(value);
+                size_t needed = existing_len + value_len + 2;
+                char* combined = malloc(needed);
+                if (combined)
+                {
+                    memcpy(combined, existing, existing_len);
+                    combined[existing_len] = join;
+                    memcpy(combined + existing_len+1, value, value_len);
+                    combined[needed-1] = '\0';
+                    setenv(env_name, combined, 1);
+                    free(combined);
+                }
+            }
+            else
+            {
+			    setenv(env_name, value, 1);
+            }
 		}
 		gmk_api.free(value);
 	}
@@ -101,18 +155,18 @@ static void export_var(const char* name, char join)
  */
 static void set_python_env(void)
 {
-	export_var("PYTHONHOME", 0);
-	export_var("PYTHONPATH", ':');
-	export_var("PYTHONOPTIMIZE", 0);
-	export_var("PYTHONDEBUG", 0);
-	export_var("PYTHONDONTWRITEBYTECODE", 0);
-	export_var("PYTHONINSPECT", 0); // does this work?
-	export_var("PYTHONIOENCODING", 0);
-	export_var("PYTHONUSERSITE", 0);
-	export_var("PYTHONUNBUFFERED", 0);
-	export_var("PYTHONVERBOSE", 0);
-	export_var("PYTHONWARNINGS", ',');
-	export_var("PYTHONHASHSEED", 0);
+	export_var("PYTHONHOME",              ".PYTHONHOME");
+	append_var_list("PYTHONPATH",         ".PYTHONPATH", ':');
+	export_var("PYTHONOPTIMIZE",          ".PYTHONOPTIMIZE");
+	export_var("PYTHONDEBUG",             ".PYTYONDEBUG");
+	export_var("PYTHONDONTWRITEBYTECODE", ".PYTHONDONTWRITEBYTECODE");
+	export_var("PYTHONINSPECT",           ".PYTHONINSPECT"); // does this work?
+	export_var("PYTHONIOENCODING",        ".PYTHONIOENCODING");
+	export_var("PYTHONUSERSITE",          ".PYTHONUSERSITE");
+	export_var("PYTHONUNBUFFERED",        ".PYTHONUNBUFFERED");
+	export_var("PYTHONVERBOSE",           ".PYTHONVERBOSE");
+	append_var_list("PYTHONWARNINGS",     ".PYTHONWARNINGS", ',');
+	export_var("PYTHONHASHSEED",          ".PYTHONHASHSEED");
 }
 
 

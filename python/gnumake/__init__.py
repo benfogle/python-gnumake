@@ -132,13 +132,13 @@ def _real_callback(name, argc, argv):
         ctypes.memmove(ret, val, len(val))
         ctypes.memset(ret + len(val), 0, 1)
     except Exception as e:
-        if expand('$(PYTHON_PRINT_TRACEBACK)'):
+        if expand('$(.PYTHON_PRINT_TRACEBACK)'):
             traceback.print_exc()
 
         err = fully_escape_string("{}: {}".format(type(e).__name__, e))
-        evaluate('define PYTHON_LAST_ERROR\n{}\nendef'.format(err))
+        evaluate('define .PYTHON_LAST_ERROR\n{}\nendef'.format(err))
     else:
-        evaluate('undefine PYTHON_LAST_ERROR')
+        evaluate('undefine .PYTHON_LAST_ERROR')
 
     return ret
 
@@ -382,7 +382,7 @@ def python_library(libs):
     A convenience function for essentially the same thing as:
     $(python-exec import gnumake.library.<foo>)
 
-    This function appends successful imports to PYTHON_LIBRARIES, and will
+    This function appends successful imports to .PYTHON_LIBRARIES, and will
     not set the error variable if a module fails to import.
     """
     libs = libs.split()
@@ -393,7 +393,7 @@ def python_library(libs):
             except ImportError as e:
                 pass
             else:
-                evaluate("PYTHON_LIBRARIES += {}".format(mod))
+                evaluate(".PYTHON_LIBRARIES += {}".format(mod))
 
 
 
