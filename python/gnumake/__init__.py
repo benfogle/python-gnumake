@@ -1,10 +1,13 @@
 """
 Python integration into GNU Make
 
-Do not import directly. This should be imported by __init__ only if the
-_gnumake module loaded successfully.
+This is the main module, which is loaded automatically by the py-gnumake
+plugin.
 
+You can import this module into a regular Python interpreter, but most
+functions will raise an ImportError if you try to call them.
 """
+
 import sys
 import tempfile
 import os
@@ -36,15 +39,19 @@ def object_to_string(obj):
     """
     Convert a Python object to a string in a way that will be somewhat sensible
     to the makefile:
-        1. True becomes '1'
-        2. False and None become an empty string
-        3. Strings are unchanged.
-        4. Bytes, bytearrays, and anything supporting the buffer protocol are
-           converted to a string using the default encoding.
-        5. Anything else returns str(obj)
 
-    @param obj  The object to convert.
-    @return a string representation of the object.
+    - True becomes '1'
+    - False and None become an empty string
+    - Strings are unchanged.
+    - Bytes, bytearrays, and anything supporting the buffer protocol are
+      converted to a string using the default encoding.
+    - Anything else returns str(obj)
+
+    Args:
+        obj (object):  The object to convert.
+
+    Returns:
+        string: a string representation of the object.
     """
 
     if obj is True:
@@ -100,11 +107,13 @@ def _real_callback(name, argc, argv):
     It converts the arguments from ctypes into a more Pythonic format, and
     it converts the return value into a string usable by gnumake.
 
-    name:   Bytes/c_char_p name of the function being called
-    argc:   The number of arguments in argv
-    argv:   The arguments as an array of c_char_p.
+    Args:
+        name (bytes):   name of the function being called
+        argc (int):     The number of arguments in argv
+        argv (list):    The arguments as an array of bytes objects
 
-    returns: A string allocated by gmk_alloc
+    Returns: 
+        ctypes.c_void_p: A string allocated by gmk_alloc
     """
 
     ret = None
@@ -137,13 +146,19 @@ _real_callback = _api.gmk_func_ptr(_real_callback)
 
 
 def guess_function_parameters(func):
-    """Guess function parameters. We only count positional arguments.
-    
-    returns min_args, max_args. max_args may be -1 to indicate variable
-    arguments.
-
-    This function does not work on builtins.
     """
+    Guess function parameters. We only count positional arguments.
+    
+    This function does not work on builtins.
+
+    Args:
+        func (function object):    Function to inspect
+
+    Returns:
+        (int, int): 2-tuple of min_args, max_args, where max_args may be
+                    -1 to indicate variable arguments.
+    """
+
     min_args = 0
     max_args = 0
 
@@ -163,33 +178,55 @@ def guess_function_parameters(func):
 def export(func=None, *, name=None, expand=True, min_args=-1,
                                                  max_args=-1):
     """
-    Decorator to expose a function to Python. Calls add_function on the
-    given function.
+    Decorator to expose a function to Python. 
+
+    All parameters passed to the Python function will be strings. The return
+    value of the function will be converted to a string according to the
+    following rules:
+
+    1. Strings are unchanged
+    2. True becomes '1'
+    3. False and None become an empty string
+    4. Bytes, bytearrays, and anything supporting the buffer protocol will be
+       converted to a string using the default encoding.
+    5. All other objects use str(obj) 
+
+    Args:
+        func (function):    Function to decorate
+        name (string):      The GNU make name of the function. If omitted,
+                            defaults to the unqualified function name
+        expand (bool):      If True (default) arguments to the function are
+                            expanded by make before the function is called.
+                            Otherwise the function receives the arguments
+                            verbatim, $(variables) and all.
+        min_args (int):     The minimum number of arguments to the function. 
+                            If -1, (default) then the number of arguments will 
+                            be guessed.
+        max_args (int):     If > 0, the maximum number of arguments to the
+                            function. A value of 0 means any number of
+                            arguments. A value of -1 (default) means that the
+                            number of parameters will be guessed.
 
     Examples:
-    >>> @export
-    ... def foo(*args):
-    ...     pass
 
-    >>> @export(name="make_name", min_args=1, max_args=3):
-    ... def python_name(arg1, arg2=None, arg3=None):
-    ...     pass
+        >>> @gnumake.export
+        ... def newer(file1, file2):
+        ...    '''Returns the newer file'''
+        ...    if os.path.getmtime(file1) > os.path.getmtime(file2):
+        ...        return file1
+        ...    else:
+        ...        return file2
 
-    May also be used as a function:
-    >>> export(os.path.isfile)
+        >>> @gnumake.export(name='repeat-loop', expand=False):
+        ... def repeat_loop(n, loop):
+        ...   '''A while-loop for the makefile'''
+        ...    while gnumake.expand(condition):
+        ...        gnumake.expand(loop)    
 
+    May also be used as a function::
 
-    func:   The function to expose to GNU make
-    name:   The GNU make name of the function. If omitted, defaults to the
-            unqualified function name
-    expand: If True (default) arguments to the function are expanded by make
-            before the function is called. Otherwise the function receives
-            the arguments verbatim, $(variables) and all.
-    min_args:   The minimum number of arguments to the function. 
-                If -1, (default) then the number of arguments will be guessed.
-    max_args:   If > 0, the maximum number of arguments to the function. A
-                value of 0 means any number of arguments. A value of -1
-                (default) means that the number of parameters will be guessed.
+        >>> export(os.path.isfile, min_args=1, max_args=1)
+
     """
     if func is None:
         if not _api.gmk_detected:
@@ -258,12 +295,18 @@ def export(func=None, *, name=None, expand=True, min_args=-1,
 def evaluate(s):
     """
     Evaluate a string as Makefile syntax, as if $(eval ...) had been used.
+
+    Note:
+        GNU make handles errors by exiting the entire program.
     """
     _api.gmk_eval(s.encode(), None)
 
 def expand(s):
     """
     Expand a string according to Makefile rules
+
+    Note:
+        GNU make handles errors by exiting the entire program.
     """
     s = _api.gmk_expand(s.encode())
 
@@ -277,12 +320,17 @@ def expand(s):
 
 @export(name='python-eval')
 def python_eval(arg):
-    """Evaluate a Python expression and return the result"""
+    """
+    Implements $(python-eval ...)
+    Evaluate a Python expression and return the result
+    """
     return eval(arg, _python_globals)
 
 @export(name='python-file')
 def python_file(script, *args):
     """
+    Implements $(python-file ...)
+
     Run a Python script, optionally passing arguments to it. Any output
     (stdout only) of the script will be the return value.
 
@@ -309,7 +357,10 @@ def python_file(script, *args):
 
 @export(name="python-exec")
 def python_exec(arg):
-    """Run inline Python code"""
+    """
+    Implements $(python-exec ...)
+    Run inline Python code
+    """
     stdout_original = os.dup(1)
     try:
         with tempfile.TemporaryFile() as capture:
@@ -326,6 +377,8 @@ def python_exec(arg):
 @export(name='python-library')
 def python_library(libs):
     """
+    Implements $(python-library ...)
+
     A convenience function for essentially the same thing as:
     $(python-exec import gnumake.library.<foo>)
 
@@ -348,27 +401,34 @@ def python_library(libs):
 
 class Variables:
     """
-    Convenience class for manipulating variables in a more Pythonic manner
+    Convenience class for manipulating variables in a more Pythonic manner.
+
+    An instance of this class is available as ``gnumake.variables`` or 
+    ``gnumake.vars``
     """
 
     def get(self, name, default = '', expand_value=True):
         """
         Get a variable name
 
-        name:       The name of the variable. This should not contain a $(...),
-                    and computed names are not allowed.
+        Args:
+            name (string):      The name of the variable. This should not
+                                contain a $(...), and computed names are not
+                                allowed.
 
-        default:    Value to return if the result is undefined. Defaults to an
-                    empty string. This value will be returned only if the
-                    variable is undefined, not if it has been defined to an
-                    empty string.
+            default (string):   Value to return if the result is undefined.
+                                Defaults to an empty string. This value will be
+                                returned only if the variable is undefined, not
+                                if it has been defined to an empty string.
 
-        expand:     If true (default), the value will be expanded according
-                    to the flavor of the variable. This is usually what you
-                    want. Note that this makes no difference for simply
-                    expanded variables, which are fully expanded on assignment.
+            expand (bool):      If true (default), the value will be expanded
+                                according to the flavor of the variable. This
+                                is usually what you want. Note that this makes
+                                no difference for simply expanded variables,
+                                which are fully expanded on assignment.
         
-        returns:    The value of the variable
+        Returns:
+            string: The value of the variable
         """
 
         if not is_legal_name(name):
@@ -390,12 +450,13 @@ class Variables:
         """
         Set a variable
 
-        name:   The variable name
-        value:  The variable value. This string will be escaped to preserve
-                newlines, etc. Dollar signs ($) are _not_ escaped.
-        flavor: May be 'recursive' or 'simple'. Specifying 'recursive' is
-                equivalent to name=value, while 'simple' is equivalent to
-                name:=value. Default is recursive.
+        Args:
+            name:   The variable name
+            value:  The variable value. This string will be escaped to preserve
+                    newlines, etc. Dollar signs ($) are _not_ escaped.
+            flavor: May be 'recursive' or 'simple'. Specifying 'recursive' is
+                    equivalent to name=value, while 'simple' is equivalent to
+                    name:=value. Default is recursive.
         """
 
         if not is_legal_name(name):
