@@ -37,3 +37,4 @@ $(eval $(shell python3 -m gnumake))
 installed in this manner, this module is completely nonfunctional unless
 invoked from a makefile.)
 
+[1]: https://benfogle.github.io/python-gnumake/
