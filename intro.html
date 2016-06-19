@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction &mdash; Py-gnumake 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Py-gnumake 0.1 documentation" href="index.html" />
+    <link rel="next" title="Installing and Using" href="installing_using.html" />
+    <link rel="prev" title="Py-gnumake" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="installing_using.html" title="Installing and Using"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Py-gnumake"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Py-gnumake 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>Py-gnumake is a GNU make plugin that allows you to extend a makefile with
+Python. Python code run through Py-gnumake has access to variables, make
+functions, and etc., just like functions built with conventional makefile
+syntax.</p>
+<div class="section" id="rationale">
+<h2>Rationale<a class="headerlink" href="#rationale" title="Permalink to this headline">¶</a></h2>
+<p>First and foremost, this is a tech demo using the fairly new plugin feature for
+GNU make, introduced in version 4.0. But does it have any real applications?</p>
+<p>Let&#8217;s start with a real example: <a class="reference external" href="https://android.googlesource.com/platform/ndk/+/master/build/core/definitions-graph.mk#398">this actual makefile from the Android NDK</a>.
+Peruse that file for a moment and bask in the glory of a topological sort
+written in pure make syntax.</p>
+<p>The great thing about a makefile is its simplicity, and even though (or perhaps
+because) it is simple it scales remarkably well, even to huge builds. Where it
+doesn&#8217;t scale is when builds begin to require more complicated rules than
+<code class="docutils literal"><span class="pre">.c</span></code> &#8211;&gt; <code class="docutils literal"><span class="pre">.o</span></code> &#8211;&gt; <code class="docutils literal"><span class="pre">.exe</span></code>. It&#8217;s not that make can&#8217;t do it, but rather that
+complicated flows become difficult to express in make syntax. This becomes
+especially acute when makefiles are used to build projects with multiple
+interconnected sub-components.</p>
+</div>
+<div class="section" id="so-what-exactly-does-it-do">
+<h2>So what exactly does it do?<a class="headerlink" href="#so-what-exactly-does-it-do" title="Permalink to this headline">¶</a></h2>
+<p>Py-gnumake adds the following functions to make:</p>
+<ul class="simple">
+<li><a class="reference internal" href="makefile_funcs.html#python-eval"><span>python-eval</span></a> &#8211; Expands to the result of the Python
+expression.</li>
+<li><a class="reference internal" href="makefile_funcs.html#python-exec"><span>python-exec</span></a> &#8211; Executes arbitrary Python code. Expands to the
+value of any output printed to stdout (much like <code class="docutils literal"><span class="pre">$(shell</span> <span class="pre">...)</span></code>).</li>
+<li><a class="reference internal" href="makefile_funcs.html#python-file"><span>python-file</span></a> &#8211; Like <cite>python-exec</cite> but runs code from a script,
+optionally passing arguments to sys.argv.</li>
+</ul>
+<p>Python code run using these functions are all run within the same process as
+make. They all share globals and imports, and can interact with the makefile
+in the same way.</p>
+</div>
+<div class="section" id="what-can-the-python-code-do-from-within-the-makefile">
+<h2>What can the Python code do from within the makefile?<a class="headerlink" href="#what-can-the-python-code-do-from-within-the-makefile" title="Permalink to this headline">¶</a></h2>
+<p>You have full access to the Python interpreter. You can import and use any
+installed module. To make it easier to interact with the makefile, the
+<a class="reference internal" href="python_funcs.html"><em>gnumake</em></a> module provides the following functions:</p>
+<ul>
+<li><p class="first"><a class="reference internal" href="python_funcs.html#gnumake.export" title="gnumake.export"><code class="xref py py-func docutils literal"><span class="pre">export()</span></code></a> &#8211; A decorator that will cause a Python function
+to be exposed to the makefile as a new function. So running the following
+code using one of the above make functions will cause a new function
+<code class="docutils literal"><span class="pre">$(newer</span> <span class="pre">&lt;file1&gt;,&lt;file2&gt;)</span></code> to be created, which expands to the name of the
+file with the more recent modification time:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gnumake</span> <span class="kn">import</span> <span class="n">export</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="nd">@export</span>
+<span class="k">def</span> <span class="nf">newer</span><span class="p">(</span><span class="n">file1</span><span class="p">,</span> <span class="n">file2</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">file1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">file2</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">file1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">file2</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first"><a class="reference internal" href="python_funcs.html#gnumake.evaluate" title="gnumake.evaluate"><code class="xref py py-func docutils literal"><span class="pre">evaluate()</span></code></a> &#8211; Executes the given make code, as if <code class="docutils literal"><span class="pre">$(eval</span>
+<span class="pre">...)</span></code> had been used. This can be used to set variable values, raise errors,
+etc.</p>
+</li>
+<li><p class="first"><a class="reference internal" href="python_funcs.html#gnumake.expand" title="gnumake.expand"><code class="xref py py-func docutils literal"><span class="pre">expand()</span></code></a> &#8211; Returns the result of expanding the given
+expression, so <code class="docutils literal"><span class="pre">gnumake.expand(&quot;$(lastword</span> <span class="pre">$(SOME_LIST))&quot;)</span></code> could be used
+to get the final word in the variable <code class="docutils literal"><span class="pre">$(SOME_LIST)</span></code></p>
+</li>
+<li><p class="first"><code class="xref py py-data docutils literal"><span class="pre">variables</span></code> or <code class="xref py py-data docutils literal"><span class="pre">vars</span></code> &#8211; A
+dictionary-like object of type <a class="reference internal" href="python_funcs.html#gnumake.Variables" title="gnumake.Variables"><code class="xref py py-class docutils literal"><span class="pre">Variables</span></code></a> that can be
+used in place of <a class="reference internal" href="python_funcs.html#gnumake.expand" title="gnumake.expand"><code class="xref py py-func docutils literal"><span class="pre">expand()</span></code></a> and <a class="reference internal" href="python_funcs.html#gnumake.evaluate" title="gnumake.evaluate"><code class="xref py py-func docutils literal"><span class="pre">evaluate()</span></code></a>
+to access variables.</p>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction</a><ul>
+<li><a class="reference internal" href="#rationale">Rationale</a></li>
+<li><a class="reference internal" href="#so-what-exactly-does-it-do">So what exactly does it do?</a></li>
+<li><a class="reference internal" href="#what-can-the-python-code-do-from-within-the-makefile">What can the Python code do from within the makefile?</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Py-gnumake</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="installing_using.html"
+                        title="next chapter">Installing and Using</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/intro.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="installing_using.html" title="Installing and Using"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Py-gnumake"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Py-gnumake 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Benjamin Fogle.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>
