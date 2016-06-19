@@ -1,31 +1,39 @@
-# py-gnumake 
+# Py-gnumake 
+
+Please see the [main documentation][1]. This file is a brief summary of how to
+use Py-gnumake in your builds.
 
 ## Overview
 
-Py-gnumake is a hybrid Python module and GNU make plugin that allows you to
-integrate Python code directly into Makefiles. This module requires GNU make
->= 4.0, and currently only supports Python 3.3 or greater. It also currently 
-builds on Linux only.
+Py-gnumake is the unholy union of Python and makefiles.  It is a GNU make plugin
+that lets you write portions of your makefiles in Python.  Python code run
+through Py-gnumake has access to makefile variables, functions, and etc., just
+like regular makefile code.
 
-## Rationale
+## Requirements
 
-While make is a powerful build system, it is not without its warts. One of
-those warts is that although large makefiles often need conditionals, loops,
-and other standard programming constructs, makefile syntax is unwieldy for such
-tasks (to put it mildly). Yet a need for such complicated makefiles exists:
-take for example [this actual makefile from the Android NDK][1], and gaze in
-awe of a *topological sort* implemented in pure makefile syntax.
+This module requires GNU make &gt;= 4.0 and currently only supports Python 3.3
+or greater. It has currently been tested on Ubuntu Linux only.
 
-This project aims to address such complexity by allowing these algorithms to
-be implemented in a friendlier scripting language such as Python. Embedding
-Python directly into the makefile allows for scripts that are not possible with
-the $(shell ...) command and increases performance to boot.
+# Using Py-gnumake from within your source tree
 
-## Examples
+First clone the git repo somewhere in your source tree. (Git submodules work
+nicely for this.) In the Py-gnumake directory you will find the makefile
+`load-python.mk`. To use Py-gnumake, simply add the following to your makefile:
+```make
+include path/to/load-python.mk
+```
+This will build Py-gnumake if necessary, and then load it into your makefile.
+(Including this file multiple times is benign.)
 
-### Basic inlining
+# Using Py-gnumake as a Python module
 
+Install Py-gnumake from PYPI, or build it from source. Then add the following
+to your makefile:
+```make
+$(eval $(shell python3 -m gnumake))
+```
+(Note that while you can import `gnumake` into any Python script when it is
+installed in this manner, this module is completely nonfunctional unless
+invoked from a makefile.)
 
-
-
-[1]: https://android.googlesource.com/platform/ndk/+/master/build/core/definitions-graph.mk#398
