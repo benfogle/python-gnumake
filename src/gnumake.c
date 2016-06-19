@@ -190,7 +190,6 @@ int _gnumake_gmk_setup(void)
     }
 
 	set_python_env();
-    Py_SetProgramName(PYTHON_NAME);
     Py_Initialize();
 	PySys_SetArgv(0, argv);
 

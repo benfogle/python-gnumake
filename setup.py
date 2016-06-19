@@ -22,7 +22,7 @@ else:
 
 # We dynamically link against Python so that when we are loaded from make
 # we can host an interpreter ourselves. When we are loaded from Python,
-# this will be benign.
+# which generally won't happen anyway, this will be benign.
 
 python_libdir = sysconfig.get_config_var('LIBDIR')
 python_libdir += sysconfig.get_config_var('multiarchsubdir') or ''
@@ -30,10 +30,6 @@ python_library = sysconfig.get_config_var("LDLIBRARY")
 
 python_library = os.path.join(python_libdir, python_library)
 
-# Guess binary name from include dir -- we need this in case the user has
-# multiple versions installed, such as python3.5m vs python3.5dm
-# Is there an official way to do this?
-python_name = os.path.basename(sysconfig.get_path('include'))
 
 _gnumake = Extension('gnumake._gnumake',
                      sources = [
@@ -54,9 +50,6 @@ _gnumake = Extension('gnumake._gnumake',
                      extra_objects = [
                          python_library,
                      ],
-                     define_macros = [
-                         ('PYTHON_NAME', 'L"{}"'.format(python_name)),
-                     ],
                 )
 
 setup(
@@ -64,7 +57,6 @@ setup(
     version = "0.1",
     package_dir = { '' : 'python' },
     packages = [ 'gnumake',
-                 'gnumake.library',
                ],
     ext_modules = [ _gnumake ],
 )
