@@ -217,11 +217,18 @@ def export(func=None, *, name=None, expand=True, min_args=-1,
         ...    else:
         ...        return file2
 
+        This function can then be used in a makefile as $(newer f1.txt,f2.txt)
+
         >>> @gnumake.export(name='repeat-loop', expand=False):
-        ... def repeat_loop(n, loop):
+        ... def repeat_loop(condition, loop):
         ...   '''A while-loop for the makefile'''
         ...    while gnumake.expand(condition):
         ...        gnumake.expand(loop)    
+
+        This function can be used in a makefile as 
+        $(repeat-loop condition,loop). Both arguments are repeatedly expanded
+        each time through the loop.
+
 
     May also be used as a function::
 
@@ -271,6 +278,8 @@ def export(func=None, *, name=None, expand=True, min_args=-1,
 
         if min_args == -1:
             min_args = guessed_min
+            if min_args == 0:
+                min_args = 1
 
 
 
@@ -281,6 +290,8 @@ def export(func=None, *, name=None, expand=True, min_args=-1,
             raise ValueError("too many args")
         if min_args < 0 or max_args < 0:
             raise ValueError("negative args")
+        if min_args == 0:
+            raise ValueError("min_args is zero")
 
         name = name.encode()
         if len(name) > 255:
@@ -373,30 +384,6 @@ def python_exec(arg):
             return capture.read().rstrip(b'\n')
     finally:
         os.dup2(stdout_original, 1)
-
-@export(name='python-library')
-def python_library(libs):
-    """
-    Implements $(python-library ...)
-
-    A convenience function for essentially the same thing as:
-    $(python-exec import gnumake.library.<foo>)
-
-    This function appends successful imports to .PYTHON_LIBRARIES, and will
-    not set the error variable if a module fails to import.
-    """
-    libs = libs.split()
-    for mod in libs:
-        if mod.isidentifier():
-            try:
-                importlib.import_module("gnumake.library." + mod)
-            except ImportError as e:
-                pass
-            else:
-                evaluate(".PYTHON_LIBRARIES += {}".format(mod))
-
-
-
 
 
 class Variables:
