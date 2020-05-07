@@ -54,7 +54,7 @@ _gnumake = Extension('gnumake._gnumake',
 
 setup(
     name = "gnumake",
-    version = "0.1",
+    version = "0.2",
     package_dir = { '' : 'python' },
     packages = [ 'gnumake',
                ],

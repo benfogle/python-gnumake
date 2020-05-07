@@ -166,7 +166,7 @@ The makefile then contains the following::
     # Invoke the test function
     $(info RESPONSE = $(say_hello world))
 
-This snipper will produce the following output:
+This snippet will produce the following output:
 
 .. code-block:: text
 
