@@ -1,6 +1,9 @@
 THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
 THIS_PATH := $(dir $(THIS_MAKEFILE))
 
+# Make sure test modules are available on the path
+export PYTHONPATH := $(abspath $(THIS_PATH)/scripts):$(PYTHONPATH)
+
 # Test files are called recursively. This way we know that each test is
 # independent from the others.
 

@@ -14,6 +14,7 @@ import os
 import inspect
 import traceback
 import ctypes
+import runpy
 import string
 import importlib
 
@@ -112,7 +113,7 @@ def _real_callback(name, argc, argv):
         argc (int):     The number of arguments in argv
         argv (list):    The arguments as an array of bytes objects
 
-    Returns: 
+    Returns:
         ctypes.c_void_p: A string allocated by gmk_alloc
     """
 
@@ -148,7 +149,7 @@ _real_callback = _api.gmk_func_ptr(_real_callback)
 def guess_function_parameters(func):
     """
     Guess function parameters. We only count positional arguments.
-    
+
     This function does not work on builtins.
 
     Args:
@@ -178,7 +179,7 @@ def guess_function_parameters(func):
 def export(func=None, *, name=None, expand=True, min_args=-1,
                                                  max_args=-1):
     """
-    Decorator to expose a function to Python. 
+    Decorator to expose a function to Python.
 
     All parameters passed to the Python function will be strings. The return
     value of the function will be converted to a string according to the
@@ -189,7 +190,7 @@ def export(func=None, *, name=None, expand=True, min_args=-1,
     3. False and None become an empty string
     4. Bytes, bytearrays, and anything supporting the buffer protocol will be
        converted to a string using the default encoding.
-    5. All other objects use str(obj) 
+    5. All other objects use str(obj)
 
     Args:
         func (function):    Function to decorate
@@ -199,8 +200,8 @@ def export(func=None, *, name=None, expand=True, min_args=-1,
                             expanded by make before the function is called.
                             Otherwise the function receives the arguments
                             verbatim, $(variables) and all.
-        min_args (int):     The minimum number of arguments to the function. 
-                            If -1, (default) then the number of arguments will 
+        min_args (int):     The minimum number of arguments to the function.
+                            If -1, (default) then the number of arguments will
                             be guessed.
         max_args (int):     If > 0, the maximum number of arguments to the
                             function. A value of 0 means any number of
@@ -223,9 +224,9 @@ def export(func=None, *, name=None, expand=True, min_args=-1,
         ... def repeat_loop(condition, loop):
         ...   '''A while-loop for the makefile'''
         ...    while gnumake.expand(condition):
-        ...        gnumake.expand(loop)    
+        ...        gnumake.expand(loop)
 
-        This function can be used in a makefile as 
+        This function can be used in a makefile as
         $(repeat-loop condition,loop). Both arguments are repeatedly expanded
         each time through the loop.
 
@@ -246,9 +247,9 @@ def export(func=None, *, name=None, expand=True, min_args=-1,
             _name = name
             if _name is None:
                 _name = func.__name__
-            export(func,  name=_name, 
-                          min_args=min_args, 
-                          max_args=max_args, 
+            export(func,  name=_name,
+                          min_args=min_args,
+                          max_args=max_args,
                           expand=expand)
             return func
         return inner
@@ -366,6 +367,27 @@ def python_file(script, *args):
         os.dup2(stdout_original, 1)
         sys.argv = argv_original
 
+@export(name='python-mod')
+def python_mod(mod, *args):
+    """
+    Implements $(python-mod ...)
+
+    Import a Python module, exposing any 'exported' functions. This does not
+    invoke a function by default, as it is intended to provide access to the
+    library instead.
+    """
+    argv_original   = sys.argv
+    stdout_original = os.dup(1)
+    try:
+        with tempfile.TemporaryFile() as capture:
+            os.dup2(capture.fileno(), 1)
+            runpy.run_module(mod, init_globals=_python_globals)
+            capture.seek(0)
+            return capture.read().rstrip(b'\n')
+    finally:
+        os.dup2(stdout_original, 1)
+        sys.argv = argv_original
+
 @export(name="python-exec")
 def python_exec(arg):
     """
@@ -390,7 +412,7 @@ class Variables:
     """
     Convenience class for manipulating variables in a more Pythonic manner.
 
-    An instance of this class is available as ``gnumake.variables`` or 
+    An instance of this class is available as ``gnumake.variables`` or
     ``gnumake.vars``
     """
 
@@ -413,7 +435,7 @@ class Variables:
                                 is usually what you want. Note that this makes
                                 no difference for simply expanded variables,
                                 which are fully expanded on assignment.
-        
+
         Returns:
             string: The value of the variable
         """
@@ -522,6 +544,6 @@ variables = Variables()
 
 # Synonym for variables object. This is for Python code inlined in a makefile,
 # where terse one-liners may be desirable
-var = variables 
+var = variables
 
 

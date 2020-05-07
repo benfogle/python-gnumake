@@ -1,4 +1,4 @@
-load $(shell python3 -m gnumake)
+$(eval $(shell python3 -m gnumake))
 
 # A basic Python expression:
 VAR1 := $(python-eval 'Hello, make')
@@ -38,5 +38,11 @@ IS_FILE := $(isfile $(MY_MAKEFILE))
 IS_DIR := $(isdir $(MY_MAKEFILE))
 $(info IS_FILE = $(IS_FILE))
 $(info IS_DIR = $(IS_DIR))
+
+# Demonstrate using a Python module
+export PYTHONPATH := $(PYTHONPATH):$(abspath .)
+$(python-mod demo_mod.example)
+
+$(info MODULE -> $(say_hello world))
 
 all:
