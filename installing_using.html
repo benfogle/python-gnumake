@@ -1,33 +1,24 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Installing and Using &mdash; Py-gnumake 0.1 documentation</title>
-    
+    <meta charset="utf-8" />
+    <title>Installing and Using &#8212; Py-gnumake 0.2 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Py-gnumake 0.1 documentation" href="index.html" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Makefile Functions" href="makefile_funcs.html" />
     <link rel="prev" title="Introduction" href="intro.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -40,7 +31,7 @@
         <li class="right" >
           <a href="intro.html" title="Introduction"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Py-gnumake 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Py-gnumake 0.2 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -56,30 +47,30 @@ subdirectory in your source tree, or as a regular installed Python module.</p>
 <div class="section" id="using-from-within-your-source-tree">
 <h2>Using from within your source tree<a class="headerlink" href="#using-from-within-your-source-tree" title="Permalink to this headline">¶</a></h2>
 <p>In this method, you package Py-gnumake in your source distribution so that the
-user doesn&#8217;t have to have it installed to build you project.</p>
+user doesn’t have to have it installed to build you project.</p>
 <p>First clone the git repo somewhere in your source tree. (Git submodules work
 nicely for this.) In the Py-gnumake directory you will find the makefile
-<code class="docutils literal"><span class="pre">load-python.mk</span></code>. To use Py-gnumake, simply add the following to your
+<code class="docutils literal notranslate"><span class="pre">load-python.mk</span></code>. To use Py-gnumake, simply add the following to your
 makefile:</p>
-<div class="highlight-make"><div class="highlight"><pre><span></span><span class="cp">include path/to/load-python.mk</span>
+<div class="highlight-make notranslate"><div class="highlight"><pre><span></span><span class="cp">include path/to/load-python.mk</span>
 </pre></div>
 </div>
 <p>This will build Py-gnumake if necessary and then load it into your makefile.
 (Including this file multiple times is benign.)</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
+<p class="admonition-title">Note</p>
 <p>If your makefile might be run from somewhere other than the current working
 directory, something like the following is recommended at the very top of
 your makefile(s):</p>
-<div class="last highlight-make"><div class="highlight"><pre><span></span><span class="nv">this-makefile</span> <span class="o">:=</span> <span class="k">$(</span>lastword <span class="k">$(</span>MAKEFILE_LIST<span class="k">))</span>
+<div class="highlight-make notranslate"><div class="highlight"><pre><span></span><span class="nv">this-makefile</span> <span class="o">:=</span> <span class="k">$(</span>lastword <span class="k">$(</span>MAKEFILE_LIST<span class="k">))</span>
 <span class="nv">this-path</span> <span class="o">:=</span> <span class="k">$(</span>patsubst %/,%,<span class="k">$(</span>this-makefile<span class="k">))</span>
 <span class="cp">include $(this-path)/rel/path/to/load-python.mk</span>
 </pre></div>
 </div>
 </div>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">This will cause the makefile to be restarted the first time Py-gnumake is
+<p class="admonition-title">Note</p>
+<p>This will cause the makefile to be restarted the first time Py-gnumake is
 built. See <cite>How Makefiles Are Remade
 &lt;https://www.gnu.org/software/make/manual/html_node/Remaking-Makefiles.html#Remaking-Makefiles&gt;</cite>
 for details of this process.</p>
@@ -90,16 +81,16 @@ for details of this process.</p>
 <p>In this method, Py-gnumake must be installed as a regular Python module in
 order to build your project.</p>
 <p>Either use pip:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ pip install py-gnumake
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install py-gnumake
 </pre></div>
 </div>
 <p>Or build from source:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>$ python3 setup.py build
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python3 setup.py build
 $ python3 setup.py install
 </pre></div>
 </div>
 <p>Then to use Py-gnumake, add the following line to your makefile:</p>
-<div class="highlight-make"><div class="highlight"><pre><span></span>$(eval $(shell python3 -m gnumake))
+<div class="highlight-make notranslate"><div class="highlight"><pre><span></span><span class="k">$(</span><span class="nv">eval</span> <span class="k">$(</span><span class="nv">shell</span> <span class="nv">python3</span> <span class="nv">-m</span> <span class="nv">gnumake</span><span class="k">))</span>
 </pre></div>
 </div>
 </div>
@@ -111,7 +102,7 @@ $ python3 setup.py install
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Installing and Using</a><ul>
 <li><a class="reference internal" href="#using-from-within-your-source-tree">Using from within your source tree</a></li>
@@ -129,23 +120,20 @@ $ python3 setup.py install
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/installing_using.txt"
+      <li><a href="_sources/installing_using.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -162,12 +150,12 @@ $ python3 setup.py install
         <li class="right" >
           <a href="intro.html" title="Introduction"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Py-gnumake 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Py-gnumake 0.2 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2016, Benjamin Fogle.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; Copyright 2016, Benjamin Fogle.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
   </body>
 </html>

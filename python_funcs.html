@@ -1,33 +1,24 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Python Functions &mdash; Py-gnumake 0.1 documentation</title>
-    
+    <meta charset="utf-8" />
+    <title>Python Functions &#8212; Py-gnumake 0.2 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Py-gnumake 0.1 documentation" href="index.html" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Handling Exceptions" href="exceptions.html" />
     <link rel="prev" title="Makefile Functions" href="makefile_funcs.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -40,7 +31,7 @@
         <li class="right" >
           <a href="makefile_funcs.html" title="Makefile Functions"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Py-gnumake 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Py-gnumake 0.2 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -54,47 +45,43 @@
 <div class="section" id="main-api">
 <h2>Main API<a class="headerlink" href="#main-api" title="Permalink to this headline">¶</a></h2>
 <p>These functions implement the GNU make API used to interact with a makefile.</p>
-<dl class="function">
+<dl class="py function">
 <dt id="gnumake.export">
-<code class="descclassname">gnumake.</code><code class="descname">export</code><span class="sig-paren">(</span><em>func=None</em>, <em>*</em>, <em>name=None</em>, <em>expand=True</em>, <em>min_args=-1</em>, <em>max_args=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.export" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">gnumake.</code><code class="sig-name descname">export</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">expand</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">min_args</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">max_args</span><span class="o">=</span><span class="default_value">- 1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.export" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decorator to expose a function to Python.</p>
 <p>All parameters passed to the Python function will be strings. The return
 value of the function will be converted to a string according to the
 following rules:</p>
 <ol class="arabic simple">
-<li>Strings are unchanged</li>
-<li>True becomes &#8216;1&#8217;</li>
-<li>False and None become an empty string</li>
-<li>Bytes, bytearrays, and anything supporting the buffer protocol will be
-converted to a string using the default encoding.</li>
-<li>All other objects use str(obj)</li>
+<li><p>Strings are unchanged</p></li>
+<li><p>True becomes ‘1’</p></li>
+<li><p>False and None become an empty string</p></li>
+<li><p>Bytes, bytearrays, and anything supporting the buffer protocol will be
+converted to a string using the default encoding.</p></li>
+<li><p>All other objects use str(obj)</p></li>
 </ol>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>func</strong> (<em>function</em>) &#8211; Function to decorate</li>
-<li><strong>name</strong> (<em>string</em>) &#8211; The GNU make name of the function. If omitted,
-defaults to the unqualified function name</li>
-<li><strong>expand</strong> (<em>bool</em>) &#8211; If True (default) arguments to the function are
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> (<em>function</em>) – Function to decorate</p></li>
+<li><p><strong>name</strong> (<em>string</em>) – The GNU make name of the function. If omitted,
+defaults to the unqualified function name</p></li>
+<li><p><strong>expand</strong> (<em>bool</em>) – If True (default) arguments to the function are
 expanded by make before the function is called.
 Otherwise the function receives the arguments
-verbatim, $(variables) and all.</li>
-<li><strong>min_args</strong> (<em>int</em>) &#8211; The minimum number of arguments to the function.
+verbatim, $(variables) and all.</p></li>
+<li><p><strong>min_args</strong> (<em>int</em>) – The minimum number of arguments to the function.
 If -1, (default) then the number of arguments will
-be guessed.</li>
-<li><strong>max_args</strong> (<em>int</em>) &#8211; If &gt; 0, the maximum number of arguments to the
+be guessed.</p></li>
+<li><p><strong>max_args</strong> (<em>int</em>) – If &gt; 0, the maximum number of arguments to the
 function. A value of 0 means any number of
 arguments. A value of -1 (default) means that the
-number of parameters will be guessed.</li>
+number of parameters will be guessed.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p class="rubric">Examples</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@gnumake.export</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@gnumake</span><span class="o">.</span><span class="n">export</span>
 <span class="gp">... </span><span class="k">def</span> <span class="nf">newer</span><span class="p">(</span><span class="n">file1</span><span class="p">,</span> <span class="n">file2</span><span class="p">):</span>
 <span class="gp">... </span>   <span class="sd">&#39;&#39;&#39;Returns the newer file&#39;&#39;&#39;</span>
 <span class="gp">... </span>   <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">file1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">file2</span><span class="p">):</span>
@@ -104,7 +91,7 @@ number of parameters will be guessed.</li>
 </pre></div>
 </div>
 <p>This function can then be used in a makefile as $(newer f1.txt,f2.txt)</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@gnumake.export</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;repeat-loop&#39;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@gnumake</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;repeat-loop&#39;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="gp">... </span><span class="k">def</span> <span class="nf">repeat_loop</span><span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="n">loop</span><span class="p">):</span>
 <span class="gp">... </span>  <span class="sd">&#39;&#39;&#39;A while-loop for the makefile&#39;&#39;&#39;</span>
 <span class="gp">... </span>   <span class="k">while</span> <span class="n">gnumake</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">condition</span><span class="p">):</span>
@@ -115,28 +102,28 @@ number of parameters will be guessed.</li>
 $(repeat-loop condition,loop). Both arguments are repeatedly expanded
 each time through the loop.</p>
 <p>May also be used as a function:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">export</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">,</span> <span class="n">min_args</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_args</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">export</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">,</span> <span class="n">min_args</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_args</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="gnumake.expand">
-<code class="descclassname">gnumake.</code><code class="descname">expand</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.expand" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">gnumake.</code><code class="sig-name descname">expand</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.expand" title="Permalink to this definition">¶</a></dt>
 <dd><p>Expand a string according to Makefile rules</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">GNU make handles errors by exiting the entire program.</p>
+<p class="admonition-title">Note</p>
+<p>GNU make handles errors by exiting the entire program.</p>
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="gnumake.evaluate">
-<code class="descclassname">gnumake.</code><code class="descname">evaluate</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.evaluate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Evaluate a string as Makefile syntax, as if $(eval ...) had been used.</p>
+<code class="sig-prename descclassname">gnumake.</code><code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate a string as Makefile syntax, as if $(eval …) had been used.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">GNU make handles errors by exiting the entire program.</p>
+<p class="admonition-title">Note</p>
+<p>GNU make handles errors by exiting the entire program.</p>
 </div>
 </dd></dl>
 
@@ -145,179 +132,170 @@ each time through the loop.</p>
 <h2>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h2>
 <p>In addition to the main API, Py-gnumake exposes a few utility functions that
 may prove useful.</p>
-<dl class="class">
+<dl class="py class">
 <dt id="gnumake.Variables">
-<em class="property">class </em><code class="descclassname">gnumake.</code><code class="descname">Variables</code><a class="headerlink" href="#gnumake.Variables" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">gnumake.</code><code class="sig-name descname">Variables</code><a class="headerlink" href="#gnumake.Variables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convenience class for manipulating variables in a more Pythonic manner.</p>
-<p>An instance of this class is available as <code class="docutils literal"><span class="pre">gnumake.variables</span></code> or
-<code class="docutils literal"><span class="pre">gnumake.vars</span></code></p>
-<dl class="method">
+<p>An instance of this class is available as <code class="docutils literal notranslate"><span class="pre">gnumake.variables</span></code> or
+<code class="docutils literal notranslate"><span class="pre">gnumake.vars</span></code></p>
+<dl class="py method">
 <dt id="gnumake.Variables.__contains__">
-<code class="descname">__contains__</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.__contains__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__contains__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.__contains__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Synonym for defined(name)</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="gnumake.Variables.__delitem__">
-<code class="descname">__delitem__</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.__delitem__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__delitem__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.__delitem__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Synonym for undefine(name)</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="gnumake.Variables.__getitem__">
-<code class="descname">__getitem__</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.__getitem__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__getitem__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.__getitem__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Synonym for get(name)</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="gnumake.Variables.__setitem__">
-<code class="descname">__setitem__</code><span class="sig-paren">(</span><em>name</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.__setitem__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__setitem__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.__setitem__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Synonym for set(name, value)</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt id="gnumake.Variables.__weakref__">
-<code class="descname">__weakref__</code><a class="headerlink" href="#gnumake.Variables.__weakref__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#gnumake.Variables.__weakref__" title="Permalink to this definition">¶</a></dt>
 <dd><p>list of weak references to the object (if defined)</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="gnumake.Variables.append">
-<code class="descname">append</code><span class="sig-paren">(</span><em>name</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.append" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.append" title="Permalink to this definition">¶</a></dt>
 <dd><p>Append a value to a possibly existing variable. Values will
 be appended with a single space between the old value and the new
 one. The flavor of the variable will remain unchanged.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="gnumake.Variables.defined">
-<code class="descname">defined</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.defined" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">defined</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.defined" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns True if a variable has been defined, or False otherwise</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="gnumake.Variables.flavor">
-<code class="descname">flavor</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.flavor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the flavor of a variable. May return &#8216;simple&#8217;, &#8216;recursive&#8217;
-or &#8216;undefined&#8217;</p>
+<code class="sig-name descname">flavor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.flavor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the flavor of a variable. May return ‘simple’, ‘recursive’
+or ‘undefined’</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="gnumake.Variables.get">
-<code class="descname">get</code><span class="sig-paren">(</span><em>name</em>, <em>default=''</em>, <em>expand_value=True</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.get" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">default</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">expand_value</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a variable name</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>name</strong> (<em>string</em>) &#8211; The name of the variable. This should not
-contain a $(...), and computed names are not
-allowed.</li>
-<li><strong>default</strong> (<em>string</em>) &#8211; Value to return if the result is undefined.
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>string</em>) – The name of the variable. This should not
+contain a $(…), and computed names are not
+allowed.</p></li>
+<li><p><strong>default</strong> (<em>string</em>) – Value to return if the result is undefined.
 Defaults to an empty string. This value will be
 returned only if the variable is undefined, not
-if it has been defined to an empty string.</li>
-<li><strong>expand</strong> (<em>bool</em>) &#8211; If true (default), the value will be expanded
+if it has been defined to an empty string.</p></li>
+<li><p><strong>expand</strong> (<em>bool</em>) – If true (default), the value will be expanded
 according to the flavor of the variable. This
 is usually what you want. Note that this makes
 no difference for simply expanded variables,
-which are fully expanded on assignment.</li>
+which are fully expanded on assignment.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The value of the variable</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">string</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The value of the variable</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="gnumake.Variables.origin">
-<code class="descname">origin</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.origin" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">origin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.origin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the origin of a variable. See make documentation for possible
 values and their meanings.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="gnumake.Variables.set">
-<code class="descname">set</code><span class="sig-paren">(</span><em>name</em>, <em>value</em>, <em>flavor='recursive'</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.set" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">flavor</span><span class="o">=</span><span class="default_value">'recursive'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.set" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set a variable</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> &#8211; The variable name</li>
-<li><strong>value</strong> &#8211; The variable value. This string will be escaped to preserve
-newlines, etc. Dollar signs ($) are _not_ escaped.</li>
-<li><strong>flavor</strong> &#8211; May be &#8216;recursive&#8217; or &#8216;simple&#8217;. Specifying &#8216;recursive&#8217; is
-equivalent to name=value, while &#8216;simple&#8217; is equivalent to
-name:=value. Default is recursive.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – The variable name</p></li>
+<li><p><strong>value</strong> – The variable value. This string will be escaped to preserve
+newlines, etc. Dollar signs ($) are _not_ escaped.</p></li>
+<li><p><strong>flavor</strong> – May be ‘recursive’ or ‘simple’. Specifying ‘recursive’ is
+equivalent to name=value, while ‘simple’ is equivalent to
+name:=value. Default is recursive.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="gnumake.Variables.undefine">
-<code class="descname">undefine</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.undefine" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">undefine</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.Variables.undefine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Undefine a variable</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="gnumake.escape_string">
-<code class="descclassname">gnumake.</code><code class="descname">escape_string</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.escape_string" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">gnumake.</code><code class="sig-name descname">escape_string</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.escape_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Escape a string such that it can appear in a define directive.
-We need to escape &#8216;endef&#8217; and backslash-newline.</p>
+We need to escape ‘endef’ and backslash-newline.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="gnumake.fully_escape_string">
-<code class="descclassname">gnumake.</code><code class="descname">fully_escape_string</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.fully_escape_string" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">gnumake.</code><code class="sig-name descname">fully_escape_string</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.fully_escape_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Escape a string such that it can appear verbatim in a define directive.
 This version also escapes $ so that variable expansion does not occur.
-We need to escape &#8216;endef&#8217;, backslash-newline, and $.</p>
+We need to escape ‘endef’, backslash-newline, and $.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="gnumake.object_to_string">
-<code class="descclassname">gnumake.</code><code class="descname">object_to_string</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.object_to_string" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">gnumake.</code><code class="sig-name descname">object_to_string</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.object_to_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a Python object to a string in a way that will be somewhat sensible
 to the makefile:</p>
 <ul class="simple">
-<li>True becomes &#8216;1&#8217;</li>
-<li>False and None become an empty string</li>
-<li>Strings are unchanged.</li>
-<li>Bytes, bytearrays, and anything supporting the buffer protocol are
-converted to a string using the default encoding.</li>
-<li>Anything else returns str(obj)</li>
+<li><p>True becomes ‘1’</p></li>
+<li><p>False and None become an empty string</p></li>
+<li><p>Strings are unchanged.</p></li>
+<li><p>Bytes, bytearrays, and anything supporting the buffer protocol are
+converted to a string using the default encoding.</p></li>
+<li><p>Anything else returns str(obj)</p></li>
 </ul>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>obj</strong> (<em>object</em>) &#8211; The object to convert.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a string representation of the object.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">string</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>obj</strong> (<em>object</em>) – The object to convert.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a string representation of the object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="gnumake.is_legal_name">
-<code class="descclassname">gnumake.</code><code class="descname">is_legal_name</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.is_legal_name" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">gnumake.</code><code class="sig-name descname">is_legal_name</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gnumake.is_legal_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that a name is a legal makefile variable name</p>
 </dd></dl>
 
@@ -330,7 +308,7 @@ converted to a string using the default encoding.</li>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Python Functions</a><ul>
 <li><a class="reference internal" href="#main-api">Main API</a></li>
@@ -348,23 +326,20 @@ converted to a string using the default encoding.</li>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/python_funcs.txt"
+      <li><a href="_sources/python_funcs.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -381,12 +356,12 @@ converted to a string using the default encoding.</li>
         <li class="right" >
           <a href="makefile_funcs.html" title="Makefile Functions"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Py-gnumake 0.1 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Py-gnumake 0.2 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2016, Benjamin Fogle.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+        &#169; Copyright 2016, Benjamin Fogle.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
     </div>
   </body>
 </html>
