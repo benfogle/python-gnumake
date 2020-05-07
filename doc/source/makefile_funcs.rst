@@ -19,7 +19,7 @@ expansion.  See :doc:`exceptions` for more complete error-handling.
 
 .. _python-eval:
 
-python-eval 
+python-eval
 -----------
 
 **Usage:**
@@ -83,7 +83,7 @@ This makefile snippet will print out something like:
 .. code-block:: text
 
     RESULT1 = Random is 47
-    RESULT2 = 
+    RESULT2 =
     RESULT3 = tmp1*tmp2 =  7760
 
 .. _python-file:
@@ -133,3 +133,41 @@ This snippet will produce the following output:
     RESULT1 = Matches: dead edge
     RESULT2 = abc
 
+.. _python-mod:
+
+python-mod
+----------
+
+**Usage:** ``$(python-mod <mod>(.<submod>))``
+
+**Description:** Similar to :ref:`$(python-file ...) <python-file>` but only
+exposes the @gnumake.export functions from the module into the Makefile. Note
+that different modules are isolated - so global variables will not be visible.
+
+**Example**:
+
+A Python module needs to be declared that contains an ``__init__.py`` file. It
+can also contain any number of Python files to sub-divide the module. For
+example my_mod/example.py contains the following:
+
+.. code-block:: python
+
+    import gnumake
+
+    @gnumake.export
+    def say_hello(arg):
+        return "Hello " + arg + "!"
+
+The makefile then contains the following::
+
+    # Import the Python module
+    $(python-mod my_mod.example)
+
+    # Invoke the test function
+    $(info RESPONSE = $(say_hello world))
+
+This snipper will produce the following output:
+
+.. code-block:: text
+
+    RESPONSE = Hello world!
